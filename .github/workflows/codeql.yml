@@ -111,9 +111,14 @@ jobs:
           make
     
         else
-          echo "⚙️ No build system found, using manual g++"
-          g++ -std=c++20 -Wall -Wextra -Werror -pedantic \
-          $(find . -name "*.cpp") -o main
+          echo "⚙️ No build system found, compiling each file separately"
+        
+          mkdir -p bin
+        
+          for file in $(find . -name "*.cpp"); do
+            echo "🔧 Compiling $file"
+            g++ -std=c++20 -Wall -Wextra -Werror -pedantic "$file" -o "bin/$(basename ${file%.cpp})"
+          done
         fi
 
     - name: Perform CodeQL Analysis
