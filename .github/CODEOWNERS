@@ -1,0 +1,11 @@
+# CODEOWNERS - project control
+
+# Each line is a file pattern followed by one or more owners.
+# Owners are automatically requested for review on pull requests.
+
+# Default owner for the entire repository.
+# All changes must be approved by the team lead.
+*       @Kinshiiii
+
+# Order is important; the last matching pattern takes precedence.
+# Additional rules can be added below if needed.
