@@ -1,0 +1,5 @@
+name: "CodeQL config"
+
+paths-ignore:
+  - "core/mcmf.cpp"
+  - "core/template.cpp"
