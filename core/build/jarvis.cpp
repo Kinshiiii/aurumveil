@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
             {"x", p.x},
             {"y", p.y}
         });
-    }
+     }
 
     cout << outputData.dump(4) << endl;
 }
