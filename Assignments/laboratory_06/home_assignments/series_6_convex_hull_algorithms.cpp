@@ -33,7 +33,7 @@ ostream& operator<<(ostream& os, const vector<Point>& points) {
     return os;
 }
 
-void read_points(size_t& point_count, vector<Point>& input_points) {
+void read_and_prepare_points(size_t& point_count, vector<Point>& input_points) {
     cout << "Enter points (x y):" << endl;
 
     for (size_t i = 0; i < point_count; ++i) {
@@ -65,14 +65,14 @@ void read_points(size_t& point_count, vector<Point>& input_points) {
     cout << endl;
 }
 
-double squared_distance(const Point& a, const Point& b) {
-    double dx = a.x - b.x;
-    double dy = a.y - b.y;
-    return dx * dx + dy * dy;
+double cross_product(const Point& o, const Point& a, const Point& b) {
+    return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
 }
 
-double orientation(const Point& p, const Point& q, const Point& r) {
-    return (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+double squared_distance(const Point& a, const Point& b) {
+    const double dx = a.x - b.x;
+    const double dy = a.y - b.y;
+    return dx * dx + dy * dy;
 }
 
 vector<Point> compute_convex_hull_graham_stable(size_t point_count, const vector<Point>& input_points) {
@@ -97,7 +97,7 @@ vector<Point> compute_convex_hull_graham_stable(size_t point_count, const vector
     stable_sort(points.begin() + 1, points.end(),
         [&](const Point& a, const Point& b)
         {
-            double orient = orientation(pivot, a, b);
+            double orient = cross_product(pivot, a, b);
 
             if (abs(orient) < EPS) {
                 return squared_distance(pivot, a) < squared_distance(pivot, b);
@@ -111,7 +111,7 @@ vector<Point> compute_convex_hull_graham_stable(size_t point_count, const vector
 
     for (size_t i = 1; i < point_count; ++i) {
         while (i + 1 < point_count &&
-               abs(orientation(pivot, points[i], points[i + 1])) < EPS)
+               abs(cross_product(pivot, points[i], points[i + 1])) < EPS)
         {
             ++i;
         }
@@ -141,9 +141,9 @@ vector<Point> compute_convex_hull_graham_stable(size_t point_count, const vector
         const Point& p = points[i];
 
         while (convex_hull.size() >= 2 &&
-               orientation(convex_hull[convex_hull.size() - 2],
+               cross_product(convex_hull[convex_hull.size() - 2],
                            convex_hull.back(),
-                           p) <= 0)
+                           p) <= EPS)
         {
             convex_hull.pop_back();
         }
@@ -152,90 +152,6 @@ vector<Point> compute_convex_hull_graham_stable(size_t point_count, const vector
     }
 
     cout << "  - Graham (stable sort) time: "
-         << duration_cast<nanoseconds>(steady_clock::now() - start).count()
-         << " ns"
-         << endl;
-
-    return convex_hull;
-}
-
-vector<Point> compute_convex_hull_graham_polar(size_t point_count, const vector<Point>& input_points) {
-    vector<Point> points = input_points;
-
-    auto start = steady_clock::now();
-
-    size_t start_index = 0;
-
-    for (size_t i = 1; i < point_count; ++i) {
-        if (points[i].y < points[start_index].y ||
-            (abs(points[i].y - points[start_index].y) < EPS &&
-             points[i].x < points[start_index].x))
-        {
-            start_index = i;
-        }
-    }
-
-    swap(points[0], points[start_index]);
-    const Point& pivot = points[0];
-
-    sort(points.begin() + 1, points.end(),
-        [&](const Point& a, const Point& b)
-        {
-            double orient = orientation(pivot, a, b);
-
-            if (abs(orient) < EPS) {
-                return squared_distance(pivot, a) < squared_distance(pivot, b);
-            }
-
-            return orient > 0;
-        });
-
-    vector<Point> filtered;
-    filtered.push_back(points[0]);
-
-    for (size_t i = 1; i < point_count; ++i) {
-        while (i + 1 < point_count &&
-               abs(orientation(pivot, points[i], points[i + 1])) < EPS)
-        {
-            ++i;
-        }
-        filtered.push_back(points[i]);
-    }
-
-    points = filtered;
-    point_count = points.size();
-
-    if (point_count < 3) {
-        cout << "  - Graham (polar sort) time: "
-             << duration_cast<nanoseconds>(steady_clock::now() - start).count()
-             << " ns"
-             << endl;
-
-        return points;
-    }
-
-    vector<Point> convex_hull;
-    convex_hull.reserve(point_count);
-
-    convex_hull.push_back(points[0]);
-    convex_hull.push_back(points[1]);
-    convex_hull.push_back(points[2]);
-
-    for (size_t i = 3; i < point_count; ++i) {
-        const Point& p = points[i];
-
-        while (convex_hull.size() >= 2 &&
-               orientation(convex_hull[convex_hull.size() - 2],
-                           convex_hull.back(),
-                           p) <= 0)
-        {
-            convex_hull.pop_back();
-        }
-
-        convex_hull.push_back(p);
-    }
-
-    cout << "  - Graham (polar sort) time: "
          << duration_cast<nanoseconds>(steady_clock::now() - start).count()
          << " ns"
          << endl;
@@ -275,7 +191,7 @@ vector<Point> compute_convex_hull_jarvis(size_t point_count, const vector<Point>
             const Point& candidate = input_points[j];
             const Point& best = input_points[next_index];
 
-            double orient = orientation(p, best, candidate);
+            double orient = cross_product(p, best, candidate);
 
             if (orient < 0 ||
                 (abs(orient) < EPS &&
@@ -307,9 +223,9 @@ vector<Point> compute_convex_hull_monotonic_chain(size_t point_count, const vect
         const Point& p = input_points[i];
 
         while (convex_hull.size() >= 2 &&
-               orientation(convex_hull[convex_hull.size() - 2],
+               cross_product(convex_hull[convex_hull.size() - 2],
                            convex_hull.back(),
-                           p) <= 0)
+                           p) <= EPS)
         {
             convex_hull.pop_back();
         }
@@ -319,13 +235,13 @@ vector<Point> compute_convex_hull_monotonic_chain(size_t point_count, const vect
 
     size_t lower_size = convex_hull.size();
 
-    for (ssize_t i = (ssize_t)point_count - 2; i >= 0; --i) {
+    for (ssize_t i = static_cast<ssize_t>(point_count) - 2; i >= 0; --i) {
         const Point& p = input_points[i];
 
         while (convex_hull.size() > lower_size &&
-               orientation(convex_hull[convex_hull.size() - 2],
+               cross_product(convex_hull[convex_hull.size() - 2],
                            convex_hull.back(),
-                           p) <= 0)
+                           p) <= EPS)
         {
             convex_hull.pop_back();
         }
@@ -354,19 +270,15 @@ void run_convex_hull_algorithms(size_t point_count, const vector<Point>& input_p
         return;
     }
 
-    cout << "Convex hull (Graham scan - stable sort): " << endl
+    cout << "Convex hull (Graham scan algorithm with stable sort):" << endl
          << compute_convex_hull_graham_stable(point_count, input_points)
          << endl << endl;
 
-    cout << "Convex hull (Graham scan - polar sort): " << endl
-         << compute_convex_hull_graham_polar(point_count, input_points)
-         << endl << endl;
-
-    cout << "Convex hull (Jarvis march): " << endl
+    cout << "Convex hull (Jarvis's march algorithm):" << endl
          << compute_convex_hull_jarvis(point_count, input_points)
          << endl << endl;
 
-    cout << "Convex hull (Monotonic chain / Andrew's algorithm): " << endl
+    cout << "Convex hull (Monotonic chain / Andrew's algorithm):" << endl
          << compute_convex_hull_monotonic_chain(point_count, input_points)
          << endl;
 }
@@ -379,7 +291,7 @@ void initialize_convex_hull_workflow() {
 
     vector<Point> input_points(point_count);
 
-    read_points(point_count, input_points);
+    read_and_prepare_points(point_count, input_points);
 
     run_convex_hull_algorithms(
         point_count,
