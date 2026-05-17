@@ -10,11 +10,16 @@ from models.domain import (
     Point,
 )
 
+from core.compression.huffman import (
+    compress_text,
+    decompress_text,
+)
+
 
 # ===== PATHS =====
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIRECTORY = BASE_DIR / "data"
-DEFAULT_DATA_FILE = DATA_DIRECTORY / "data.json"
+DEFAULT_DATA_FILE = DATA_DIRECTORY / "data.huff"
 RAW_DATA_DIRECTORY = DATA_DIRECTORY / "raw"
 
 
@@ -40,8 +45,12 @@ def load_default_data() -> ProblemData | None:
 
 
 def load_from_file(file_path: str) -> ProblemData:
-    with open(file_path, "r", encoding="utf-8") as file:
-        json_data = json.load(file)
+    with open(file_path, "rb") as file:
+        compressed = file.read()
+
+    decoded_json = decompress_text(compressed)
+
+    json_data = json.loads(decoded_json)
 
     _validate_json_structure(json_data)
 
@@ -86,15 +95,33 @@ def load_from_file(file_path: str) -> ProblemData:
 def save_default_data(problem_data: ProblemData) -> None:
     _ensure_data_directories()
 
-    with open(DEFAULT_DATA_FILE, "w", encoding="utf-8") as file:
-        json.dump(_to_dict(problem_data), file, indent=4)
+    data_dict = _to_dict(problem_data)
+
+    serialized = json.dumps(
+        data_dict,
+        indent=4,
+    )
+
+    compressed = compress_text(serialized)
+
+    with open(DEFAULT_DATA_FILE, "wb") as file:
+        file.write(compressed)
 
 
 def save_data_to_path(problem_data: ProblemData, file_path: str) -> None:
     _ensure_data_directories()
 
-    with open(file_path, "w", encoding="utf-8") as file:
-        json.dump(_to_dict(problem_data), file, indent=4)
+    data_dict = _to_dict(problem_data)
+
+    serialized = json.dumps(
+        data_dict,
+        indent=4,
+    )
+
+    compressed = compress_text(serialized)
+
+    with open(file_path, "wb") as file:
+        file.write(compressed)
 
 
 def save_raw_data(data: ProblemData) -> str:
@@ -104,12 +131,19 @@ def save_raw_data(data: ProblemData) -> str:
     serialized_json = json.dumps(data_dict, sort_keys=True, separators=(",", ":"))
     hash_value = hashlib.sha256(serialized_json.encode()).hexdigest()
 
-    filename = f"data_{hash_value}.json"
+    filename = f"data_{hash_value}.huff"
     raw_file_path = RAW_DATA_DIRECTORY / filename
 
     if not raw_file_path.exists():
-        with open(raw_file_path, "w", encoding="utf-8") as file:
-            json.dump(data_dict, file, indent=4)
+        serialized = json.dumps(
+            data_dict,
+            indent=4,
+        )
+
+        compressed = compress_text(serialized)
+
+        with open(raw_file_path, "wb") as file:
+            file.write(compressed)
 
     return filename
 

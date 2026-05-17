@@ -9,9 +9,11 @@ from ui.main_window import MainWindow
 # ===== APP START =====
 def run_app() -> int:
     application: QApplication = QApplication(sys.argv)
-    main_window: MainWindow = MainWindow()
 
+    application.setStyle("Fusion")
     application.setStyleSheet(APP_THEME)
+
+    main_window: MainWindow = MainWindow()
     main_window.show()
 
     return application.exec()

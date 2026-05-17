@@ -20,28 +20,25 @@ def get_executable_path(algorithm_name: str) -> Path:
 # ===== EXECUTABLES =====
 EXECUTABLES: dict[str, Path] = {
     # MAX FLOW
-    "Ford-Fulkerson": get_executable_path("ford"),
-    "Edmonds-Karp": get_executable_path("edmonds"),
-    "Dinic": get_executable_path("dinic"),
-    "MKM": get_executable_path("mkm"),
+    "Ford–Fulkerson Method": get_executable_path("ford"),
+    "Edmonds–Karp Method": get_executable_path("edmonds"),
+    "Dinic Method": get_executable_path("dinic"),
 
     # MIN COST
-    "Dijkstra": get_executable_path("dijkstra"),
-    "Bellman-Ford": get_executable_path("bellman"),
-    "SPFA": get_executable_path("spfa"),
+    "Bellman–Ford Method": get_executable_path("bellman"),
+    "d'Esopo–Pape Method": get_executable_path("desopopape"),
 
     # MIN COST MAX FLOW
     "Min-Cost Max-Flow": get_executable_path("mcmf"),
 
     # GEOMETRY
-    "Graham (quick)": get_executable_path("graham"),
-    "Graham (stable)": get_executable_path("graham_stable"),
-    "Jarvis": get_executable_path("jarvis"),
-    "Monotonic Chain": get_executable_path("monotonic"),
+    "Graham Scan Method": get_executable_path("graham"),
+    "Jarvis March Method": get_executable_path("jarvis"),
+    "Monotone Chain Method": get_executable_path("monotonic"),
 
     # SEGMENT
-    "Segment Tree": get_executable_path("segment"),
-    "Brute Force": get_executable_path("brute"),
+    "Brute Force Method": get_executable_path("brute"),
+    "Segment Tree Method": get_executable_path("segment"),
 }
 
 

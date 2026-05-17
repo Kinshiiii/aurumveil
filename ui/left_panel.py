@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -11,6 +12,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QFileDialog,
     QSizePolicy,
+    QDialog,
 )
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -37,6 +39,9 @@ class LeftPanel(QWidget):
 
         self.setObjectName("LeftPanel")
         self.current_file_path: str | None = None
+        self.log_index = 0
+        self.figure = Figure(dpi=160)
+        self.show_labels = True
 
         self._build_ui()
         self._draw_points()
@@ -69,6 +74,10 @@ class LeftPanel(QWidget):
 
         self.stats = QTextEdit()
         self.stats.setReadOnly(True)
+        self.stats.mouseDoubleClickEvent = self._open_logs_window
+        self.stats.setToolTip(
+            "Double-click to open expanded log view"
+        )
 
         stats_wrapper = QWidget()
         stats_layout = QVBoxLayout(stats_wrapper)
@@ -90,7 +99,7 @@ class LeftPanel(QWidget):
         layout.setSpacing(8)
 
         def create_button(text: str) -> QPushButton:
-            btn = QPushButton(text)  # ✔ fix shadow warning
+            btn = QPushButton(text)
             btn.setObjectName("ActionButton")
             btn.setSizePolicy(
                 QSizePolicy.Policy.Expanding,
@@ -98,36 +107,43 @@ class LeftPanel(QWidget):
             )
             return btn
 
-        load_button = create_button("LOAD")
+        load_button = create_button("Open")
+        load_button.setObjectName("loadButton")
         load_button.clicked.connect(self._load_file)
         layout.addWidget(load_button)
 
         layout.addStretch(1)
 
-        save_button = create_button("SAVE")
+        save_button = create_button("Quick Save")
         save_button.clicked.connect(self._save)
         layout.addWidget(save_button)
 
-        save_as_button = create_button("SAVE AS")
+        save_as_button = create_button("Save To")
         save_as_button.clicked.connect(self._save_as)
         layout.addWidget(save_as_button)
 
         layout.addStretch(1)
 
-        enter_button = create_button("ENTER DATA")
+        enter_button = create_button("Edit Data")
         enter_button.clicked.connect(self._open_data_dialog)
         layout.addWidget(enter_button)
 
-        clear_button = create_button("CLEAR")
+        clear_button = create_button("Clear")
         clear_button.clicked.connect(self._clear_data)
         layout.addWidget(clear_button)
+
+        self.toogle_button = create_button("Disable Labels")
+        self.toogle_button.clicked.connect(
+            self._toogle_data
+        )
+        layout.addWidget(self.toogle_button)
 
         layout.addStretch(2)
 
         self.mode_group = QButtonGroup(self)
 
-        self.btn_cached = QPushButton("Cached")
-        self.btn_recompute = QPushButton("Recompute")
+        self.btn_cached = QPushButton("Use Cache")
+        self.btn_recompute = QPushButton("Run Analysis")
 
         for mode_btn in (self.btn_cached, self.btn_recompute):
             mode_btn.setCheckable(True)
@@ -158,30 +174,114 @@ class LeftPanel(QWidget):
             return
 
         self.figure.clear()
-        ax = self.figure.add_subplot(111)
+        axis = self.figure.add_subplot(111)
 
         for miner in data.miners:
-            x, y = miner.position.x, miner.position.y
-            ax.scatter(x, y, color="green", marker="o")
-            ax.text(x, y, miner.identifier)
+            x_coord = miner.position.x
+            y_coord = miner.position.y
+
+            axis.scatter(
+                x_coord,
+                y_coord,
+                color="#52A52E",
+                marker="o",
+                zorder=3,
+                label="Dwarven Settlements" if miner == data.miners[0] else ""
+            )
+
+            axis.scatter(x_coord, y_coord, color="#52A52E", marker="o", zorder=3)
+            if self.show_labels:
+                axis.text(x_coord, y_coord, miner.identifier)
 
         for mine in data.mines:
-            x, y = mine.location.x, mine.location.y
-            ax.scatter(x, y, color="red", marker="s")
-            ax.text(x, y, mine.identifier)
+            x_coord = mine.location.x
+            y_coord = mine.location.y
 
-        ax.set_title("Points visualization")
-        ax.grid()
+            axis.scatter(
+                x_coord,
+                y_coord,
+                color="#E80538",
+                marker="s",
+                zorder=3,
+                label="Mining Facilities" if mine == data.mines[0] else ""
+            )
 
+            axis.scatter(x_coord, y_coord, color="#E80538", marker="s", zorder=3)
+            if self.show_labels:
+                axis.text(x_coord, y_coord, mine.identifier)
+
+        axis.set_title("Strategic Mining Infrastructure of the Dwarven Kingdom")
+        axis.grid()
+
+        right_panel = getattr(self, "right_panel", None)
+
+        if right_panel is not None and right_panel.last_result is not None:
+            convex_hull = (
+                right_panel.last_result
+                .get("geometry", {})
+                .get("convex_hull", [])
+            )
+
+            hull_size = len(convex_hull)
+
+            for edge_index in range(hull_size):
+                point_a = convex_hull[edge_index]
+                point_b = convex_hull[(edge_index + 1) % hull_size]
+
+                x1, y1 = point_a["x"], point_a["y"]
+                x2, y2 = point_b["x"], point_b["y"]
+
+                axis.plot(
+                    [x1, x2],
+                    [y1, y2],
+                    color="#7FA4D1",
+                    linewidth=2,
+                    zorder=2,
+                    antialiased=True,
+                    label="Protected Kingdom Boundary"
+                    if edge_index == 0 else ""
+                )
+
+                mid_x = (x1 + x2) / 2
+                mid_y = (y1 + y2) / 2
+
+                axis.text(
+                    mid_x,
+                    mid_y,
+                    f"B{edge_index + 1}",
+                    ha="center",
+                    va="center",
+                    fontsize=10,
+                    fontweight="bold",
+                    color="#2F2F2F",
+                    zorder=4,
+                    bbox=dict(
+                        facecolor="#F8F8F8",
+                        edgecolor="#6578B4",
+                        linewidth=1.5,
+                        boxstyle="round,pad=0.45"
+                    )
+                )
+
+        axis.legend(
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.12),
+            ncol=3,
+            frameon=True
+        )
+        self.figure.subplots_adjust(bottom=0.2)
         self.canvas.draw()
+
+    def redraw_graph(self) -> None:
+        self._draw_points()
 
     # ===== LOAD =====
     def _load_file(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Load JSON",
+            "Import Dataset",
             str(DATA_DIRECTORY),
-            "JSON Files (*.json)",
+            "Huffman Files (*.huff)",
         )
 
         if not path:
@@ -192,19 +292,27 @@ class LeftPanel(QWidget):
             save_default_data(data)
 
             self.current_file_path = path
-            self.stats.append(f"✔ Loaded: {path}")
+            self.log(f"[SYSTEM] Dataset successfully loaded: {path}")
 
             self._draw_points()
 
+            self.log(
+                "[SYSTEM] Visualization refreshed successfully"
+            )
+
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.critical(
+                self,
+                "Import Failed",
+                f"An unexpected error occurred while loading the dataset:\n\n{e}"
+            )
 
     # ===== SAVE =====
     def _save(self) -> None:
         data = load_default_data()
 
         if not data:
-            QMessageBox.warning(self, "Warning", "No data in temporary buffer")
+            QMessageBox.warning(self, "No Data Available", "There is no input dataset available for saving.")
             return
 
         if self.current_file_path:
@@ -220,81 +328,104 @@ class LeftPanel(QWidget):
                         current_path.unlink()
 
                     self.current_file_path = str(new_path)
-                    self.stats.append(f"✔ RAW updated → {new_filename}")
+                    self.log(f"[SYSTEM] RAW dataset updated: {new_filename}")
                     self._draw_points()
                     return
 
                 save_data_to_path(data, str(current_path))
-                self.stats.append(f"✔ Saved to: {current_path}")
+                self.log(f"[SYSTEM] Dataset successfully saved to: {current_path}")
                 self._draw_points()
                 return
 
             except Exception as e:
-                QMessageBox.critical(self, "Error", str(e))
+                QMessageBox.critical(self, "Save Operation Failed", f"An unexpected error occurred while saving data:\n\n{e}")
                 return
 
         filename = save_raw_data(data)
         new_path = RAW_DATA_DIRECTORY / filename
 
         self.current_file_path = str(new_path)
-        self.stats.append(f"✔ Saved to RAW: {filename}")
+        self.log(f"[SYSTEM] Dataset successfully stored in RAW directory: {filename}")
 
         self._draw_points()
+
+        self.log(
+            "[SYSTEM] Visualization refreshed successfully"
+        )
 
     # ===== SAVE AS =====
     def _save_as(self) -> None:
         data = load_default_data()
 
         if not data:
-            QMessageBox.warning(self, "Warning", "No data in temporary buffer")
+            QMessageBox.warning(self, "No Data Available", "There is no input dataset available for export.")
             return
 
         filename = save_raw_data(data)
 
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Save As",
+            "Export Dataset",
             str(DATA_DIRECTORY / filename),
-            "JSON Files (*.json)",
+            "Huffman Files (*.huff)",
         )
 
         if not path:
             return
 
-        if not path.lower().endswith(".json"):
-            path += ".json"
+        if not path.lower().endswith(".huff"):
+            path += ".huff"
 
         try:
             save_data_to_path(data, path)
 
             self.current_file_path = path
-            self.stats.append(f"✔ Saved as: {path}")
+            self.log(f"[SYSTEM] Dataset successfully saved to: {path}")
 
             self._draw_points()
-            self.stats.append("✔ Points updated")
-
+            self.log("[SYSTEM] Visualization refreshed successfully")
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.critical(
+                self,
+                "Operation Failed",
+                f"An unexpected error occurred:\n\n{e}"
+            )
 
     # ===== OTHER =====
     def _open_data_dialog(self) -> None:
+        old_data = load_default_data()
+
         dialog = DataDialog()
 
         if dialog.exec():
-            if self.current_file_path:
-                self.stats.append(
-                    f"✔ Data updated (linked: {self.current_file_path})"
-                )
-            else:
-                self.stats.append("✔ Data saved (temp mode)")
+            new_data = load_default_data()
 
-            self._draw_points()
+            if old_data != new_data:
+                self.log("[SYSTEM] Input dataset updated")
+
+                result_path = DATA_DIRECTORY / "result.huff"
+                if result_path.exists():
+                    result_path.unlink()
+                    self.log("[SYSTEM] Previous analysis results cleared")
+
+                self._draw_points()
+            else:
+                self.log("[SYSTEM] No changes detected in the input dataset")
+
+    def _on_data_changed(self) -> None:
+        result_path = DATA_DIRECTORY / "result.huff"
+
+        if result_path.exists():
+            result_path.unlink()
+            self.log("[SYSTEM] Previous analysis results cleared")
+
+        self._draw_points()
 
     def _clear_data(self) -> None:
         reply = QMessageBox.question(
             self,
-            "Confirm",
-            "Delete all saved data?",
+            "Confirm Operation",
+            "This action will permanently delete all saved data.\n\nContinue?",
             QMessageBox.StandardButton.Yes
             | QMessageBox.StandardButton.No,
         )
@@ -303,7 +434,52 @@ class LeftPanel(QWidget):
             delete_data_file()
             self.current_file_path = None
 
-            self.stats.append("🗑 Cleared → RAW mode")
+            self.log("[SYSTEM] Cached results removed — RAW mode enabled")
 
             self.figure.clear()
             self.canvas.draw()
+
+    def _toogle_data(self) -> None:
+        self.show_labels = not self.show_labels
+
+        self.toogle_button.setText(
+            "Enable Labels "
+            if not self.show_labels
+            else "Disable Labels"
+        )
+
+        self.log(
+            f"[SYSTEM] Point labels "
+            f"<b>{'ENABLED' if self.show_labels else 'DISABLED'}</b>"
+        )
+
+        self._draw_points()
+
+    def log(self, message: str) -> None:
+        self.log_index += 1
+
+        timestamp = datetime.now().strftime("%H:%M:%S")
+
+        self.stats.append(
+            f"<b>{self.log_index:03d}</b> │ "
+            f"<span style='color:#808080;'>"
+            f"{timestamp}"
+            f"</span> │ "
+            f"{message}"
+        )
+
+    def _open_logs_window(self, _event) -> None:
+        dialog = QDialog(self)
+        dialog.setWindowTitle("System Logs")
+        dialog.resize(900, 600)
+
+        layout = QVBoxLayout(dialog)
+
+        logs_view = QTextEdit()
+        logs_view.setReadOnly(True)
+
+        logs_view.setHtml(self.stats.toHtml())
+
+        layout.addWidget(logs_view)
+
+        dialog.exec()

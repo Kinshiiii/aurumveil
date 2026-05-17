@@ -1,5 +1,5 @@
 from typing import cast
-
+from PySide6.QtCore import Signal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import (
@@ -32,6 +32,8 @@ RESOURCES: list[str] = [
 
 # ===== DATA DIALOG =====
 class DataDialog(QDialog):
+    data_changed = Signal()
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -88,6 +90,8 @@ class DataDialog(QDialog):
             self.delete_mine_button,
         ):
             button.setObjectName("ActionButton")
+            button.setFixedWidth(120)
+            button.setFixedHeight(24)
 
         self.delete_miner_button.setEnabled(False)
         self.delete_mine_button.setEnabled(False)
@@ -479,6 +483,7 @@ class DataDialog(QDialog):
             return
 
         save_default_data(self.get_data())
+        self.data_changed.emit()
         self.accept()
 
     def get_data(self) -> ProblemData:

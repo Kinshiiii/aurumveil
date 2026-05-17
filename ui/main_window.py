@@ -18,14 +18,14 @@ class MainWindow(QWidget):
         # TODO: Add application window icon (.ico / .png)
         self.setWindowIcon(QIcon())
 
-        self.setMinimumSize(1100, 700)
+        self.setMinimumSize(1200, 700)
         self.resize(1200, 750)
 
         self._build_ui()
 
     # ===== LOGGING =====
     def _append_log(self, message: str) -> None:
-        self.left_panel.stats.append(message)
+        self.left_panel.log(message)
 
     # ===== UI =====
     def _build_ui(self) -> None:
@@ -43,11 +43,13 @@ class MainWindow(QWidget):
         # ===== PANELS =====
         self.left_panel: LeftPanel = LeftPanel()
         self.right_panel: RightPanel = RightPanel()
+        self.left_panel.right_panel = self.right_panel
 
         self.right_panel.setFixedWidth(320)
 
         # ===== SIGNALS =====
         self.right_panel.log_signal.connect(self._append_log)
+        self.right_panel.refresh_graph_signal.connect(self.left_panel.redraw_graph)
 
         content_layout.addWidget(self.left_panel, 7)
         content_layout.addWidget(self.right_panel, 3)
@@ -108,13 +110,38 @@ class MainWindow(QWidget):
         }}
 
         QPushButton#SegmentButton:checked {{
-            background-color: #4CAF50;
+            background-color: #6578B4;
             color: white;
-            border: 1px solid #4CAF50;
+            border: 1px solid #7FA4D1;
         }}
 
+        QPushButton#SegmentButton:checked:hover {{
+            background-color: #7FA4D1;
+            color: white;
+            border: 1px solid #6578B4;
+        }}
+        
         QPushButton#SegmentButton:hover {{
-            background-color: #f2f4f7;
+            background-color: #cfcfcf;
+            color: white;
+            border: 1px solid white;
+        }}
+        
+        QPushButton#loadButton {{
+            background-color: #52A52E;
+            color: white;
+            border-radius: {border_radius}px;
+            padding: {vertical_padding}px {horizontal_padding}px;
+            border: 1px solid #cfcfcf;
+            font-size: {font_size}px;
+        }}
+    
+        QPushButton#loadButton:hover {{
+            background-color: #9EC44D;
+        }}
+    
+        QPushButton#loadButton:pressed {{
+            background-color: #9EC44D;
         }}
         """
 

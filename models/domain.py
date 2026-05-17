@@ -44,3 +44,28 @@ class Mine:
 class ProblemData:
     miners: list[Miner]
     mines: list[Mine]
+
+    def to_dict(self) -> dict:
+        return {
+            "miners": [
+                {
+                    "id": miner.identifier,
+                    "resource": miner.resource,
+                    "x": miner.position.x,
+                    "y": miner.position.y,
+                }
+                for miner in self.miners
+            ],
+            "mines": [
+                {
+                    "id": mine.identifier,
+                    "resource": mine.resource_type,
+                    "capacity": mine.capacity,
+                    "x": mine.location.x,
+                    "y": mine.location.y,
+                    "guard_loudness": mine.assigned_guard.loudness,
+                    "boundary": mine.assigned_guard.boundary_position,
+                }
+                for mine in self.mines
+            ],
+        }

@@ -15,6 +15,10 @@ QScrollArea {
     border: none;
 }
 
+QRadioButton {
+    background: #E3E3E3;
+    border: none;
+}
 
 /* ===== INPUTS ===== */
 QTextEdit {
@@ -64,24 +68,6 @@ QListWidget {
     border-radius: 8px;
 }
 
-
-/* ===== BUTTONS ===== */
-QPushButton#ActionButton {
-    background-color: white;
-    border-radius: 14px;
-    padding: 6px 14px;
-    border: 1px solid #cfcfcf;
-}
-
-QPushButton#ActionButton:hover {
-    background-color: #f2f4f7;
-}
-
-QPushButton#ActionButton:pressed {
-    background-color: #e0e4ea;
-}
-
-
 /* ===== PRIMARY BUTTON ===== */
 QPushButton#PrimaryButton {
     background-color: #4CAF50;
@@ -105,36 +91,6 @@ QPushButton#PrimaryButton:disabled {
     border: 1px solid #dddddd;
 }
 
-
-/* ===== SEGMENT CONTROL ===== */
-QPushButton#SegmentButton {
-    background-color: white;
-    border: 1px solid #cfcfcf;
-    padding: 6px 12px;
-    border-radius: 0px;
-}
-
-QPushButton#SegmentButton:first {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-}
-
-QPushButton#SegmentButton:last {
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-}
-
-QPushButton#SegmentButton:checked {
-    background-color: #4CAF50;
-    color: white;
-    border: 1px solid #4CAF50;
-}
-
-QPushButton#SegmentButton:hover {
-    background-color: #f2f4f7;
-}
-
-
 /* ===== DISABLED ===== */
 QPushButton:disabled {
     background-color: #e0e0e0;
@@ -142,10 +98,23 @@ QPushButton:disabled {
     border: 1px solid #cfcfcf;
 }
 
+QGroupBox#SegmentBox:disabled {
+    color: #8a8a8a;
+    background-color: #f2f2f2;
+}
+
+QGroupBox#SegmentBox:disabled QRadioButton {
+    color: #8a8a8a;
+    background: #f2f2f2;
+}
 
 /* ===== TEXT ===== */
 QLabel#TitleLabel {
     font-size: 18px;
     font-weight: bold;
+}
+
+QLabel#statusLabel {
+    padding-left: 2px;
 }
 """

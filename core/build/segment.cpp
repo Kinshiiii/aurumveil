@@ -1,108 +1,77 @@
 #include <algorithm>
-#include <fstream>
 #include <iostream>
-#include <limits>
 #include <vector>
 
-#include "../include/nlohmann/json.hpp"
+#include "json_utils.hpp"
+#include "range_utils.hpp"
 
 using namespace std;
-using json = nlohmann::json;
 
-struct Dwarf {
-    string id;
-    int loudness;
-};
-
-vector<Dwarf> segment_tree;
-vector<Dwarf> dwarfs;
-
-const Dwarf neutral_element = {
-    "",
-    numeric_limits<int>::min()
-};
-
-Dwarf loudness_max(const Dwarf& a, const Dwarf& b) {
-    if (a.loudness >= b.loudness) {
-        return a;
-    }
-
-    return b;
-}
-
-void build_tree(size_t node_index, size_t node_left, size_t node_right) {
-    if (node_left == node_right) {
-        segment_tree[node_index] = dwarfs[node_left];
+void buildTree(vector<Mine>& segmentTree, const vector<Mine>& mines, size_t nodeIndex, size_t nodeLeft, size_t nodeRight) {
+    if (nodeLeft == nodeRight) {
+        segmentTree[nodeIndex] = mines[nodeLeft];
         return;
     }
 
-    size_t mid = (node_left + node_right) / 2;
+    const size_t mid = (nodeLeft + nodeRight) / 2;
 
-    build_tree(2 * node_index, node_left, mid);
-    build_tree(2 * node_index + 1, mid + 1, node_right);
-
-    segment_tree[node_index] = loudness_max(
-        segment_tree[2 * node_index],
-        segment_tree[2 * node_index + 1]
-    );
-}
-
-Dwarf query_range(
-    size_t node_index,
-    size_t node_left,
-    size_t node_right,
-    size_t query_left,
-    size_t query_right
-) {
-    if (node_right < query_left || query_right < node_left) {
-        return neutral_element;
-    }
-
-    if (query_left <= node_left && node_right <= query_right) {
-        return segment_tree[node_index];
-    }
-
-    size_t mid = (node_left + node_right) / 2;
-
-    Dwarf left_result = query_range(
-        2 * node_index,
-        node_left,
-        mid,
-        query_left,
-        query_right
+    buildTree(
+        segmentTree,
+        mines,
+        2 * nodeIndex,
+        nodeLeft,
+        mid
     );
 
-    Dwarf right_result = query_range(
-        2 * node_index + 1,
+    buildTree(
+        segmentTree,
+        mines,
+        2 * nodeIndex + 1,
         mid + 1,
-        node_right,
-        query_left,
-        query_right
+        nodeRight
     );
 
-    return loudness_max(left_result, right_result);
+    segmentTree[nodeIndex] = loudnessMax(
+        segmentTree[2 * nodeIndex],
+        segmentTree[2 * nodeIndex + 1]
+    );
 }
 
-void load_data_from_json(const json& data) {
-    dwarfs.push_back(neutral_element);
-
-    if (data.contains("points")) {
-        for (const auto& point : data["points"]) {
-            dwarfs.push_back({
-                point.value("id", ""),
-                point.value("loudness", 0)
-            });
-        }
+Mine queryRange(const vector<Mine>& segmentTree, size_t nodeIndex, size_t nodeLeft, size_t nodeRight, size_t queryLeft, size_t queryRight) {
+    if (nodeRight < queryLeft || queryRight < nodeLeft) {
+        return neutralElement;
     }
-}
 
-void output_result(const Dwarf& result) {
-    json output;
+    if (queryLeft <= nodeLeft && nodeRight <= queryRight) {
+        return segmentTree[nodeIndex];
+    }
 
-    output["id"] = result.id;
-    output["loudness"] = result.loudness;
+    const size_t mid = (nodeLeft + nodeRight) / 2;
 
-    cout << output.dump(4) << endl;
+    Mine leftResult = queryRange(
+        segmentTree,
+        2 * nodeIndex,
+        nodeLeft,
+        mid,
+        queryLeft,
+        queryRight
+    );
+
+    Mine rightResult = queryRange(
+        segmentTree,
+        2 * nodeIndex + 1,
+        mid + 1,
+        nodeRight,
+        queryLeft,
+        queryRight
+    );
+
+    Mine result = loudnessMax(
+        leftResult,
+        rightResult
+    );
+
+    return result;
 }
 
 int main(int argc, char* argv[]) {
@@ -111,54 +80,57 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    ifstream file(argv[1]);
+    try {
+        json inputData = loadJson(argv[1]);
 
-    if (!file) {
-        cerr << "Error: Cannot open file." << endl;
+        vector<Mine> mines = parseMines(inputData);
+
+        const size_t nodeRight = mines.size() - 1;
+
+        vector<Mine> segmentTree(
+            4 * nodeRight + 1,
+            neutralElement
+        );
+
+        buildTree(
+            segmentTree,
+            mines,
+            1,
+            1,
+            nodeRight
+        );
+
+        size_t queryLeft = 1;
+        size_t queryRight = nodeRight;
+
+        if (inputData.contains("range") && inputData["range"].size() == 2) {
+            size_t left = static_cast<size_t>(inputData["range"][0]);
+            size_t right = static_cast<size_t>(inputData["range"][1]);
+
+            left = max(left, static_cast<size_t>(1));
+            right = min(right, nodeRight);
+
+            if (left <= right) {
+                queryLeft = left;
+                queryRight = right;
+            }
+        }
+
+        Mine result = queryRange(
+            segmentTree,
+            1,
+            1,
+            nodeRight,
+            queryLeft,
+            queryRight
+        );
+
+        cout << buildMineOutput(result).dump(4) << endl;
+    }
+    catch (const exception& e) {
+        cerr << e.what() << endl;
         return 1;
     }
-
-    json input_json;
-    file >> input_json;
-
-    load_data_from_json(input_json);
-
-    if (dwarfs.size() <= 1) {
-        output_result(neutral_element);
-        return 0;
-    }
-
-    size_t node_right = dwarfs.size() - 1;
-
-    segment_tree.resize(4 * node_right + 1, neutral_element);
-
-    build_tree(1, 1, node_right);
-
-    size_t query_left = 1;
-    size_t query_right = node_right;
-
-    if (input_json.contains("range") && input_json["range"].size() == 2) {
-        int left = input_json["range"][0];
-        int right = input_json["range"][1];
-
-        left = max(left, 1);
-        right = min(right, static_cast<int>(node_right));
-
-        if (left <= right) {
-            query_left = static_cast<size_t>(left);
-            query_right = static_cast<size_t>(right);
-        }
-    }
-
-    Dwarf result = query_range(
-        1,
-        1,
-        node_right,
-        query_left,
-        query_right
-    );
-
-    output_result(result);
 
     return 0;
 }
