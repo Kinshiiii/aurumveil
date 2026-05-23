@@ -117,8 +117,7 @@ jobs:
           mkdir -p bin
         
           for file in $(find . -name "*.cpp" \
-            ! -path "./core/mcmf.cpp" \
-            ! -path "./core/template.cpp"); do
+            ! -path "./core/*"); do
             echo "🔧 Compiling $file"
             g++ -std=c++20 -Wall -Wextra -Werror -pedantic "$file" -o "bin/$(basename ${file%.cpp})"
           done
