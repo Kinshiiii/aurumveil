@@ -1,3 +1,12 @@
+/**
+ * @file jarvis_convex_hull.cpp
+ * @brief Jarvis March convex hull algorithm.
+ *
+ * Implements the Jarvis March (Gift Wrapping)
+ * algorithm for constructing the convex hull
+ * of a set of two-dimensional vertices.
+ */
+
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -10,6 +19,24 @@
 
 using namespace std;
 
+/**
+ * @brief Computes a convex hull using Jarvis March.
+ *
+ * Starts from the lowest vertex and repeatedly
+ * selects the next boundary vertex by searching
+ * for the most counterclockwise point relative
+ * to the current hull edge.
+ *
+ * Complexity: O(nh)
+ * where n is the number of vertices and h is
+ * the number of hull vertices.
+ *
+ * @param vertices
+ * Input vertex set.
+ *
+ * @return vector<Vertex>
+ * Convex hull vertices in counterclockwise order.
+ */
 vector<Vertex> computeConvexHullJarvis(const vector<Vertex>& vertices) {
     size_t pivotIndex = 0;
 
@@ -76,6 +103,22 @@ vector<Vertex> computeConvexHullJarvis(const vector<Vertex>& vertices) {
     return convexHull;
 }
 
+/**
+ * @brief Application entry point.
+ *
+ * Loads input vertices, executes the Jarvis
+ * convex hull algorithm, and exports the resulting
+ * boundary as a JSON response.
+ *
+ * @param argc
+ * Number of command-line arguments.
+ *
+ * @param argv
+ * Command-line arguments.
+ *
+ * @return int
+ * EXIT_SUCCESS on success, otherwise EXIT_FAILURE.
+ */
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         cerr << "Expected input file: <input.json>" << endl;

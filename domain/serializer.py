@@ -1,3 +1,12 @@
+##
+# @file serializer.py
+# @brief Text parser for world data definitions.
+#
+# Provides functionality for converting textual
+# world descriptions into domain objects used by
+# the Aurumveil platform.
+#
+
 from domain.models import (
     Mine,
     Miner,
@@ -7,10 +16,35 @@ from domain.models import (
 )
 
 
-# ===== INPUT PARSER =====
+##
+# @brief World data text parser.
+#
+# Parses a structured text representation of miners
+# and mines and converts it into a WorldData instance.
+#
 class InputParser:
 
-    # ===== TEXT PARSING =====
+    ##
+    # @brief Parses world data from text.
+    #
+    # Reads miners and mines defined in a structured
+    # text format and converts them into domain objects.
+    #
+    # Supported sections:
+    # - MINERS
+    # - MINES
+    #
+    # @param text
+    # Input text containing world data definitions.
+    #
+    # @return WorldData
+    # Parsed world model.
+    #
+    # @throws ValueError
+    # Raised when the input format is invalid or a
+    # data entry does not conform to the expected
+    # structure.
+    #
     @staticmethod
     def parse(text: str) -> WorldData:
 

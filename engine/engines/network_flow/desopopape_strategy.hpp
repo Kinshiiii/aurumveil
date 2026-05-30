@@ -1,3 +1,12 @@
+/**
+ * @file desopo_pape_strategy.hpp
+ * @brief D'Esopo-Pape shortest-path strategy.
+ *
+ * Implements the D'Esopo-Pape algorithm for finding
+ * minimum-cost augmenting paths in a residual flow
+ * network.
+ */
+
 #ifndef DESOPO_PAPE_STRATEGY_HPP
 #define DESOPO_PAPE_STRATEGY_HPP
 
@@ -9,11 +18,49 @@
 
 using namespace std;
 
+/**
+ * @brief D'Esopo-Pape shortest-path strategy.
+ *
+ * Computes shortest paths in the residual network
+ * using a deque-based relaxation mechanism that
+ * often performs efficiently on sparse graphs.
+ *
+ * This strategy is used during Minimum-Cost
+ * Maximum-Flow optimization.
+ */
 class DEsopoPapeStrategy
     : public IShortestPathStrategy
 {
 public:
 
+    /**
+     * @brief Finds a minimum-cost augmenting path.
+     *
+     * Executes the D'Esopo-Pape shortest-path
+     * algorithm on the residual network and
+     * reconstructs the resulting path.
+     *
+     * @param graph
+     * Residual flow network.
+     *
+     * @param source
+     * Source vertex.
+     *
+     * @param sink
+     * Sink vertex.
+     *
+     * @param parentVertex
+     * Parent vertex table used for path reconstruction.
+     *
+     * @param parentEdge
+     * Parent edge table used for path reconstruction.
+     *
+     * @param distance
+     * Computed shortest-path distances.
+     *
+     * @return bool
+     * True when a valid augmenting path exists.
+     */
     bool findPath(
         FlowNetwork& graph,
         int source,

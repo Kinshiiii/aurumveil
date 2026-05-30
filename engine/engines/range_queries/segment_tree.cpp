@@ -1,3 +1,12 @@
+/**
+ * @file segment_tree.cpp
+ * @brief Segment tree range query algorithm.
+ *
+ * Implements an efficient range maximum query
+ * structure used to locate the loudest mine
+ * along the kingdom boundary.
+ */
+
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -9,6 +18,27 @@
 
 using namespace std;
 
+/**
+ * @brief Builds a segment tree.
+ *
+ * Recursively constructs a segment tree storing
+ * the loudest mine for every interval.
+ *
+ * @param segmentTree
+ * Segment tree storage.
+ *
+ * @param mines
+ * Input mine collection.
+ *
+ * @param nodeIndex
+ * Current tree node index.
+ *
+ * @param nodeLeft
+ * Left boundary of the represented interval.
+ *
+ * @param nodeRight
+ * Right boundary of the represented interval.
+ */
 void buildTree(
     vector<Mine>& segmentTree,
     const vector<Mine>& mines,
@@ -53,6 +83,33 @@ void buildTree(
         );
 }
 
+/**
+ * @brief Executes a segment tree range query.
+ *
+ * Searches the specified interval and returns
+ * the mine with the greatest loudness value.
+ *
+ * @param segmentTree
+ * Segment tree storage.
+ *
+ * @param nodeIndex
+ * Current tree node index.
+ *
+ * @param nodeLeft
+ * Left boundary of the current node interval.
+ *
+ * @param nodeRight
+ * Right boundary of the current node interval.
+ *
+ * @param queryLeft
+ * Query interval start.
+ *
+ * @param queryRight
+ * Query interval end.
+ *
+ * @return Mine
+ * Loudest mine within the query interval.
+ */
 Mine queryRange(
     const vector<Mine>& segmentTree,
     size_t nodeIndex,
@@ -97,6 +154,28 @@ Mine queryRange(
     return result;
 }
 
+/**
+ * @brief Executes a circular range query.
+ *
+ * Supports boundary intervals that wrap around
+ * the convex hull by combining one or two
+ * segment tree queries.
+ *
+ * @param segmentTree
+ * Segment tree storage.
+ *
+ * @param totalMines
+ * Number of mines stored in the structure.
+ *
+ * @param from
+ * Query interval start.
+ *
+ * @param to
+ * Query interval end.
+ *
+ * @return Mine
+ * Loudest mine within the circular interval.
+ */
 Mine queryModuloRange(
     const vector<Mine>& segmentTree,
     size_t totalMines,
@@ -140,6 +219,22 @@ Mine queryModuloRange(
     );
 }
 
+/**
+ * @brief Application entry point.
+ *
+ * Loads boundary data, constructs a segment tree,
+ * executes a range maximum query, and exports the
+ * result as a JSON response.
+ *
+ * @param argc
+ * Number of command-line arguments.
+ *
+ * @param argv
+ * Command-line arguments.
+ *
+ * @return int
+ * EXIT_SUCCESS on success, otherwise EXIT_FAILURE.
+ */
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         cerr << "Expected input file: <input.json>" << endl;

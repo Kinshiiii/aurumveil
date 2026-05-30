@@ -1,4 +1,17 @@
-# ===== STYLESHEET =====
+##
+# @file stylesheet.py
+# @brief Global Qt stylesheet for the Aurumveil application.
+#
+# Defines the visual appearance of all user interface
+# components used throughout the application.
+#
+
+##
+# @brief Global application stylesheet.
+#
+# Contains the complete Qt Style Sheet (QSS) definition
+# used by the graphical user interface.
+#
 APP_STYLESHEET: str = """
 /* ===== GLOBAL ===== */
 QWidget {

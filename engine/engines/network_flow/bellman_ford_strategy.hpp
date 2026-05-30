@@ -1,3 +1,12 @@
+/**
+ * @file bellman_ford_strategy.hpp
+ * @brief Bellman-Ford shortest-path strategy.
+ *
+ * Implements a Bellman-Ford based shortest-path
+ * algorithm for finding minimum-cost augmenting
+ * paths in a residual flow network.
+ */
+
 #ifndef BELLMAN_FORD_STRATEGY_HPP
 #define BELLMAN_FORD_STRATEGY_HPP
 
@@ -8,11 +17,54 @@
 
 using namespace std;
 
+/**
+ * @brief Bellman-Ford shortest-path strategy.
+ *
+ * Computes minimum-cost augmenting paths using
+ * repeated edge relaxation and supports residual
+ * networks containing negative-cost edges.
+ *
+ * This strategy is used during Minimum-Cost
+ * Maximum-Flow optimization.
+ */
 class BellmanFordStrategy
     : public IShortestPathStrategy
 {
 public:
 
+    /**
+     * @brief Finds a minimum-cost augmenting path.
+     *
+     * Executes a Bellman-Ford style shortest-path
+     * search on the residual network and stores
+     * the resulting path reconstruction data.
+     *
+     * Negative-cost cycle detection is performed
+     * using relaxation counters.
+     *
+     * @param graph
+     * Residual flow network.
+     *
+     * @param source
+     * Source vertex.
+     *
+     * @param sink
+     * Sink vertex.
+     *
+     * @param parentVertex
+     * Parent vertex table used for path reconstruction.
+     *
+     * @param parentEdge
+     * Parent edge table used for path reconstruction.
+     *
+     * @param distance
+     * Computed shortest-path distances.
+     *
+     * @return bool
+     * True when a valid augmenting path exists.
+     * False when no path is available or a negative
+     * cycle is detected.
+     */
     bool findPath(
         FlowNetwork& graph,
         int source,

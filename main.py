@@ -1,3 +1,11 @@
+##
+# @file main.py
+# @brief Application entry point for the Aurumveil platform.
+#
+# Responsible for runtime initialization, Qt application
+# configuration, and launching the main graphical interface.
+#
+
 import sys
 import logging
 
@@ -14,7 +22,15 @@ logging.basicConfig(
 )
 
 
-# ===== TERMINAL =====
+##
+# @brief Pauses the terminal before application shutdown.
+#
+# Prevents the console window from closing immediately after
+# an initialization failure, allowing the user to review
+# the reported error message.
+#
+# @return None
+#
 def pause_terminal() -> None:
 
     try:
@@ -24,7 +40,20 @@ def pause_terminal() -> None:
         pass
 
 
-# ===== APPLICATION START =====
+##
+# @brief Builds and launches the Aurumveil application.
+#
+# Executes the runtime initialization process, configures
+# the Qt application environment, applies the global
+# stylesheet, creates the main window, and starts the
+# application event loop.
+#
+# @return int
+# Exit code returned by the Qt event loop.
+#
+# @throws Exception
+# Re-raises any exception encountered during the build phase.
+#
 def launch_application() -> int:
 
     # ===== BUILD =====
@@ -54,6 +83,11 @@ def launch_application() -> int:
     return application.exec()
 
 
-# ===== ENTRY =====
+##
+# @brief Application entry point.
+#
+# Starts the Aurumveil application and forwards the Qt
+# event loop exit code to the operating system.
+#
 if __name__ == "__main__":
     sys.exit(launch_application())

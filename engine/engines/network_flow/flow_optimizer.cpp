@@ -1,3 +1,12 @@
+/**
+ * @file flow_optimizer.cpp
+ * @brief Minimum-Cost Maximum-Flow application.
+ *
+ * Builds a flow network from the input dataset,
+ * executes the selected optimization algorithms,
+ * and exports miner assignment results as JSON.
+ */
+
 #include <fstream>
 #include <iostream>
 
@@ -11,6 +20,23 @@
 using namespace std;
 using json = nlohmann::json;
 
+/**
+ * @brief Application entry point.
+ *
+ * Loads the input dataset, constructs a resource
+ * allocation flow network, executes the selected
+ * maximum-flow and shortest-path algorithms, and
+ * exports optimization results as a JSON response.
+ *
+ * @param argc
+ * Number of command-line arguments.
+ *
+ * @param argv
+ * Command-line arguments.
+ *
+ * @return int
+ * EXIT_SUCCESS on success, otherwise EXIT_FAILURE.
+ */
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         cerr << "Expected input file: <input.json>" << endl;

@@ -1,3 +1,12 @@
+##
+# @file repository.py
+# @brief Persistent storage utilities for world data.
+#
+# Provides functionality for loading, validating,
+# serializing, compressing, and storing world data
+# used by the Aurumveil platform.
+#
+
 import hashlib
 import json
 
@@ -27,16 +36,29 @@ DATA_DIRECTORY: Path = (
     BASE_DIR / "assets"
 )
 
+##
+# @brief Default runtime state file.
+#
 DEFAULT_DATA_FILE: Path = (
     DATA_DIRECTORY / "runtime_state.huff"
 )
 
+##
+# @brief Directory containing importable datasets.
+#
 RAW_DATA_DIRECTORY: Path = (
     DATA_DIRECTORY / "datasets"
 )
 
 
-# ===== INTERNAL =====
+##
+# @file repository.py
+# @brief Persistent storage utilities for world data.
+#
+# Provides functionality for loading, validating,
+# serializing, compressing, and storing world data
+# used by the Aurumveil platform.
+#
 def _ensure_data_directories() -> None:
 
     # ===== DATA DIRECTORY =====
@@ -52,7 +74,19 @@ def _ensure_data_directories() -> None:
     )
 
 
-# ===== VALIDATION =====
+##
+# @brief Validates the structure of serialized world data.
+#
+# Verifies that the provided JSON object contains
+# all mandatory top-level sections required by
+# the application.
+#
+# @param json_data
+# JSON object to validate.
+#
+# @throws ValueError
+# Raised when the structure is invalid.
+#
 def _validate_json_structure(json_data: dict) -> None:
 
     if (
@@ -65,7 +99,15 @@ def _validate_json_structure(json_data: dict) -> None:
         )
 
 
-# ===== LOAD =====
+##
+# @brief Loads the default world state.
+#
+# Loads and reconstructs the world model stored
+# in the default runtime state file.
+#
+# @return WorldData | None
+# Loaded world data or None if no state file exists.
+#
 def load_default_data() -> WorldData | None:
 
     # ===== DATA DIRECTORIES =====
@@ -81,7 +123,22 @@ def load_default_data() -> WorldData | None:
     )
 
 
-# ===== FILE LOAD =====
+##
+# @brief Loads world data from a compressed file.
+#
+# Reads a Huffman-compressed data file, decompresses
+# its contents, validates the resulting JSON structure,
+# and reconstructs the corresponding domain model.
+#
+# @param file_path
+# Path to the compressed data file.
+#
+# @return WorldData
+# Reconstructed world model.
+#
+# @throws ValueError
+# Raised when the file contains invalid data.
+#
 def load_from_file(file_path: str) -> WorldData:
 
     # ===== FILE READ =====
@@ -194,7 +251,15 @@ def load_from_file(file_path: str) -> WorldData:
     return WorldData(miners, mines)
 
 
-# ===== SAVE =====
+##
+# @brief Saves the world state to the default location.
+#
+# Serializes and persists the specified world model
+# using the default runtime state file.
+#
+# @param world_data
+# World model to persist.
+#
 def save_default_data(world_data: WorldData) -> None:
 
     # ===== DATA DIRECTORIES =====
@@ -207,7 +272,19 @@ def save_default_data(world_data: WorldData) -> None:
     )
 
 
-# ===== FILE SAVE =====
+##
+# @brief Saves world data to a compressed file.
+#
+# Serializes the provided world model into JSON,
+# compresses the result using Huffman coding,
+# and writes the compressed data to disk.
+#
+# @param world_data
+# World model to serialize.
+#
+# @param file_path
+# Destination file path.
+#
 def save_data_to_path(world_data: WorldData, file_path: str) -> None:
 
     # ===== DATA DIRECTORIES =====
@@ -235,7 +312,19 @@ def save_data_to_path(world_data: WorldData, file_path: str) -> None:
         )
 
 
-# ===== RAW DATA SAVE =====
+##
+# @brief Saves a dataset snapshot to the dataset repository.
+#
+# Serializes the specified world model, generates a
+# content-based hash, and stores the compressed dataset
+# if an identical snapshot does not already exist.
+#
+# @param world_data
+# World model to persist.
+#
+# @return str
+# Generated dataset filename.
+#
 def save_raw_data(world_data: WorldData) -> str:
 
     # ===== DATA DIRECTORIES =====
@@ -288,7 +377,20 @@ def save_raw_data(world_data: WorldData) -> str:
     return filename
 
 
-# ===== CANONICAL SERIALIZATION =====
+##
+# @brief Creates a canonical representation of world data.
+#
+# Produces a deterministic dictionary representation
+# independent of entity ordering. The resulting structure
+# is suitable for hashing, comparisons, and duplicate
+# dataset detection.
+#
+# @param world_data
+# World model to normalize.
+#
+# @return dict[str, list[dict[str, object]]]
+# Canonical world data representation.
+#
 def to_canonical_dict(world_data: WorldData) -> dict[str, list[dict[str, object]]]:
 
     # ===== MINERS =====
@@ -355,7 +457,12 @@ def to_canonical_dict(world_data: WorldData) -> dict[str, list[dict[str, object]
     }
 
 
-# ===== CLEANUP =====
+##
+# @brief Removes the default runtime state file.
+#
+# Deletes the persisted runtime state when it exists,
+# allowing the application to start with an empty world.
+#
 def delete_data_file() -> None:
 
     # ===== DATA DIRECTORIES =====

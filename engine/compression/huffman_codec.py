@@ -1,3 +1,12 @@
+##
+# @file huffman_codec.py
+# @brief Huffman-based text compression and decompression.
+#
+# Implements Huffman coding for lossless text compression,
+# including tree construction, code generation, encoding,
+# and decoding operations.
+#
+
 import heapq
 import json
 
@@ -5,8 +14,24 @@ from collections import Counter
 from typing import Any
 
 
-# ===== HUFFMAN NODE =====
+##
+# @brief Node of a Huffman coding tree.
+#
+# Represents either a leaf node containing a symbol
+# or an internal node used during tree construction.
+#
 class HuffmanNode:
+
+    ##
+    # @brief Creates a Huffman tree node.
+    #
+    # @param symbol
+    # Symbol stored by the node. Internal nodes
+    # do not contain a symbol.
+    #
+    # @param weight
+    # Symbol frequency or subtree weight.
+    #
     def __init__(self, symbol: str | None = None, weight: int = 0) -> None:
         # ===== NODE DATA =====
         self.symbol: str | None = (
@@ -21,7 +46,18 @@ class HuffmanNode:
         self.left_branch: HuffmanNode | None = None
         self.right_branch: HuffmanNode | None = None
 
-    # ===== PRIORITY ORDERING =====
+    ##
+    # @brief Compares nodes by weight.
+    #
+    # Enables priority queue ordering during
+    # Huffman tree construction.
+    #
+    # @param other
+    # Node used for comparison.
+    #
+    # @return bool
+    # True if the current node has lower weight.
+    #
     def __lt__(self, other: "HuffmanNode") -> bool:
 
         return (
@@ -29,7 +65,18 @@ class HuffmanNode:
         )
 
 
-# ===== TREE CONSTRUCTION =====
+##
+# @brief Constructs a Huffman tree.
+#
+# Builds an optimal prefix tree based on symbol
+# frequencies extracted from the input text.
+#
+# @param text
+# Source text used to build the tree.
+#
+# @return HuffmanNode
+# Root node of the constructed Huffman tree.
+#
 def build_tree(text: str) -> HuffmanNode:
 
     # ===== SYMBOL FREQUENCY =====
@@ -89,7 +136,24 @@ def build_tree(text: str) -> HuffmanNode:
     return node_queue[0]
 
 
-# ===== CODE GENERATION =====
+##
+# @brief Generates Huffman codes from a tree.
+#
+# Traverses the Huffman tree and assigns binary
+# prefix codes to all symbols.
+#
+# @param node
+# Current Huffman tree node.
+#
+# @param prefix
+# Binary prefix accumulated during traversal.
+#
+# @param codebook
+# Code mapping being constructed.
+#
+# @return dict[str, str]
+# Generated symbol-to-code mapping.
+#
 def build_codes(node: HuffmanNode, prefix: str = "", codebook: dict[str, str] | None = None) -> dict[str, str]:
 
     # ===== CODE CONTAINER =====
@@ -125,7 +189,18 @@ def build_codes(node: HuffmanNode, prefix: str = "", codebook: dict[str, str] | 
     return codebook
 
 
-# ===== TEXT COMPRESSION =====
+##
+# @brief Compresses text using Huffman coding.
+#
+# Generates a Huffman tree, encodes the input text,
+# and serializes the compressed representation.
+#
+# @param text
+# Text to compress.
+#
+# @return bytes
+# Serialized compressed payload.
+#
 def compress_text(text: str) -> bytes:
 
     # ===== HUFFMAN TREE =====
@@ -158,7 +233,18 @@ def compress_text(text: str) -> bytes:
     ).encode("utf-8")
 
 
-# ===== TEXT DECOMPRESSION =====
+##
+# @brief Decompresses Huffman-encoded data.
+#
+# Restores the original text from a serialized
+# Huffman-compressed payload.
+#
+# @param data
+# Serialized compressed data.
+#
+# @return str
+# Decompressed text.
+#
 def decompress_text(data: bytes) -> str:
 
     # ===== PAYLOAD DESERIALIZATION =====

@@ -1,3 +1,12 @@
+/**
+ * @file edmonds_karp_strategy.hpp
+ * @brief Edmonds-Karp maximum-flow strategy.
+ *
+ * Implements flow computation and residual network
+ * augmentation according to the Edmonds-Karp
+ * method.
+ */
+
 #ifndef EDMONDS_KARP_STRATEGY_HPP
 #define EDMONDS_KARP_STRATEGY_HPP
 
@@ -7,10 +16,48 @@
 
 using namespace std;
 
+/**
+ * @brief Edmonds-Karp flow augmentation strategy.
+ *
+ * Computes augmenting flow values and updates the
+ * residual network using paths discovered through
+ * breadth-first search.
+ *
+ * Complexity per augmentation:
+ * O(L)
+ *
+ * where L is the length of the augmenting path.
+ */
 class EdmondsKarpStrategy
     : public IMaxFlowStrategy
 {
 public:
+
+    /**
+     * @brief Computes bottleneck flow capacity.
+     *
+     * Traverses the augmenting path and determines
+     * the minimum residual capacity available along
+     * the route.
+     *
+     * @param graph
+     * Residual flow network.
+     *
+     * @param source
+     * Source vertex.
+     *
+     * @param sink
+     * Sink vertex.
+     *
+     * @param parentVertex
+     * Parent vertex table describing the path.
+     *
+     * @param parentEdge
+     * Parent edge table describing the path.
+     *
+     * @return int
+     * Maximum admissible augmenting flow.
+     */
     int computeFlow(
         FlowNetwork& graph,
         int source,
@@ -47,6 +94,34 @@ public:
         return pathFlow;
     }
 
+    /**
+     * @brief Augments the residual network.
+     *
+     * Updates forward and reverse edge capacities
+     * along the augmenting path and accumulates
+     * the corresponding transportation cost.
+     *
+     * @param graph
+     * Residual flow network.
+     *
+     * @param source
+     * Source vertex.
+     *
+     * @param sink
+     * Sink vertex.
+     *
+     * @param parentVertex
+     * Parent vertex table describing the path.
+     *
+     * @param parentEdge
+     * Parent edge table describing the path.
+     *
+     * @param flow
+     * Flow value to augment.
+     *
+     * @param totalCost
+     * Accumulated transportation cost.
+     */
     void augment(
         FlowNetwork& graph,
         int source,
@@ -81,6 +156,24 @@ public:
         }
     }
 
+    /**
+     * @brief Calculates augmenting path length.
+     *
+     * Counts the number of edges forming the
+     * reconstructed source-to-sink path.
+     *
+     * @param source
+     * Source vertex.
+     *
+     * @param sink
+     * Sink vertex.
+     *
+     * @param parentVertex
+     * Parent vertex table describing the path.
+     *
+     * @return int
+     * Number of edges in the augmenting path.
+     */
     int calculatePathLength(
         int source,
         int sink,

@@ -1,3 +1,12 @@
+##
+# @file content_panel.py
+# @brief Visualization and dataset management panel.
+#
+# Provides graphical data visualization, dataset
+# management operations, logging facilities, and
+# result presentation for the Aurumveil platform.
+#
+
 from datetime import datetime
 from pathlib import Path
 from typing import (
@@ -68,9 +77,24 @@ if TYPE_CHECKING:
     )
 
 
-# ===== CONTENT PANEL =====
+##
+# @file content_panel.py
+# @brief Visualization and dataset management panel.
+#
+# Provides graphical data visualization, dataset
+# management operations, logging facilities, and
+# result presentation for the Aurumveil platform.
+#
 class ContentPanel(QWidget):
 
+    ##
+    # @brief Creates and initializes the content panel.
+    #
+    # Configures visualization state, creates the
+    # plotting canvas, initializes the user interface,
+    # loads persisted datasets, and renders the
+    # initial visualization.
+    #
     def __init__(self) -> None:
         super().__init__()
 
@@ -121,7 +145,13 @@ class ContentPanel(QWidget):
         # ===== INITIAL GRAPH =====
         self._draw_points()
 
-    # ===== USER INTERFACE =====
+    ##
+    # @brief Builds the content panel user interface.
+    #
+    # Creates the visualization canvas, navigation
+    # toolbar, logging area, and all layout containers
+    # required by the content panel.
+    #
     def _initialize_ui(self) -> None:
 
         # ===== MAIN LAYOUT =====
@@ -269,7 +299,16 @@ class ContentPanel(QWidget):
             content_card
         )
 
-    # ===== TOOLBAR =====
+    ##
+    # @brief Creates the content panel toolbar.
+    #
+    # Builds file management controls, dataset actions,
+    # visualization settings, and execution mode
+    # selection controls.
+    #
+    # @return QHBoxLayout
+    # Fully configured toolbar layout.
+    #
     def _build_toolbar(self) -> QHBoxLayout:
 
         # ===== TOOLBAR LAYOUT =====
@@ -446,7 +485,15 @@ class ContentPanel(QWidget):
 
         return toolbar_layout
 
-    # ===== EXECUTION MODE =====
+    ##
+    # @brief Returns the current execution mode.
+    #
+    # Determines whether cached results should be used
+    # instead of executing a fresh algorithm run.
+    #
+    # @return bool
+    # True when cache mode is enabled.
+    #
     def is_cached_mode(self) -> bool:
 
         return (
@@ -454,14 +501,29 @@ class ContentPanel(QWidget):
         )
 
 
-    # ===== GRAPH REFRESH =====
+    ##
+    # @brief Refreshes the graph visualization.
+    #
+    # Clears the current visualization and redraws
+    # all entities and analytical overlays.
+    #
     def redraw_graph(self) -> None:
 
         self._clear_graph()
 
         self._draw_points()
 
-    # ===== GRAPH HIGHLIGHT =====
+    ##
+    # @brief Highlights a selected mine.
+    #
+    # Updates the currently highlighted mine and
+    # refreshes the visualization to reflect the
+    # selection state.
+    #
+    # @param mine_id
+    # Identifier of the mine to highlight or None
+    # to clear the current highlight.
+    #
     def set_highlighted_mine(self, mine_id: str | None) -> None:
 
         self.highlighted_mine = (
@@ -470,7 +532,13 @@ class ContentPanel(QWidget):
 
         self._draw_points()
 
-    # ===== GRAPH RENDERING =====
+    ##
+    # @brief Renders the complete graph visualization.
+    #
+    # Loads the current dataset, prepares the graph,
+    # renders all entities and analytical overlays,
+    # and updates the visualization canvas.
+    #
     def _draw_points(self) -> None:
 
         # ===== INPUT DATASET =====
@@ -523,14 +591,28 @@ class ContentPanel(QWidget):
 
         self.canvas.draw()
 
-    # ===== GRAPH RESET =====
+    ##
+    # @brief Clears the current graph visualization.
+    #
+    # Removes all rendered elements from the figure
+    # and refreshes the drawing canvas.
+    #
     def _clear_graph(self) -> None:
 
         self.figure.clear()
 
         self.canvas.draw()
 
-    # ===== GRAPH PREPARATION =====
+    ##
+    # @brief Creates and configures a plotting area.
+    #
+    # Initializes the graph axes, applies visual
+    # configuration, and prepares the canvas for
+    # entity rendering.
+    #
+    # @return Axes
+    # Configured matplotlib plotting axes.
+    #
     def _prepare_graph(self) -> Axes:
 
         self.figure.clear()
@@ -559,7 +641,19 @@ class ContentPanel(QWidget):
 
         return graph_axis
 
-    # ===== MINER RENDERING =====
+    ##
+    # @brief Renders miner locations.
+    #
+    # Draws all miners contained in the current
+    # dataset and optionally displays their
+    # identifiers.
+    #
+    # @param graph_axis
+    # Target plotting axes.
+    #
+    # @param dataset
+    # Dataset containing miner information.
+    #
     def _draw_miners(
         self,
         graph_axis: Axes,
@@ -630,7 +724,20 @@ class ContentPanel(QWidget):
                     ],
                 )
 
-    # ===== MINE RENDERING =====
+    ##
+    # @brief Renders mine locations.
+    #
+    # Draws all mining sites contained in the current
+    # dataset and optionally displays their identifiers.
+    # Highlighted mines are rendered using a distinct
+    # visual style.
+    #
+    # @param graph_axis
+    # Target plotting axes.
+    #
+    # @param dataset
+    # Dataset containing mine information.
+    #
     def _draw_mines(
         self,
         graph_axis: Axes,
@@ -728,7 +835,19 @@ class ContentPanel(QWidget):
                     ],
                 )
 
-    # ===== ASSIGNMENT RENDERING =====
+    ##
+    # @brief Renders resource allocation assignments.
+    #
+    # Visualizes assignment relationships between
+    # miners and mines using connection lines derived
+    # from the latest optimization result.
+    #
+    # @param graph_axis
+    # Target plotting axes.
+    #
+    # @param cached_result
+    # Cached algorithm output containing assignment data.
+    #
     @staticmethod
     def _draw_assignments(
         graph_axis: Axes,
@@ -815,7 +934,19 @@ class ContentPanel(QWidget):
                 zorder=3,
             )
 
-    # ===== CONVEX HULL RENDERING =====
+    ##
+    # @brief Renders the protected kingdom boundary.
+    #
+    # Draws the convex hull generated by the selected
+    # computational geometry algorithm and annotates
+    # its boundary segments.
+    #
+    # @param graph_axis
+    # Target plotting axes.
+    #
+    # @param cached_result
+    # Cached algorithm output containing convex hull data.
+    #
     @staticmethod
     def _draw_convex_hull(
         graph_axis: Axes,
@@ -949,7 +1080,16 @@ class ContentPanel(QWidget):
                 ),
             )
 
-    # ===== GRAPH LEGEND =====
+    ##
+    # @brief Creates the graph legend.
+    #
+    # Builds and displays a legend describing all
+    # graphical entities and analytical overlays
+    # rendered within the visualization.
+    #
+    # @param graph_axis
+    # Target plotting axes.
+    #
     @staticmethod
     def _build_legend(graph_axis: Axes) -> None:
 
@@ -1063,7 +1203,17 @@ class ContentPanel(QWidget):
             borderaxespad=0.3,
         )
 
-    # ===== GRAPH CONFIGURATION =====
+    ##
+    # @brief Applies final graph configuration.
+    #
+    # Configures layout parameters, coordinate
+    # formatting, and interactive visualization
+    # behavior after all graph elements have been
+    # rendered.
+    #
+    # @param graph_axis
+    # Target plotting axes.
+    #
     def _configure_graph(self, graph_axis: Axes) -> None:
 
         self.figure.subplots_adjust(
@@ -1078,7 +1228,16 @@ class ContentPanel(QWidget):
             )
         )
 
-    # ===== CACHED RESULT =====
+    ##
+    # @brief Retrieves the most recent analysis result.
+    #
+    # Obtains the cached algorithm output stored by
+    # the control panel and returns an empty result
+    # when no analysis has been executed.
+    #
+    # @return dict[str, object]
+    # Cached algorithm result.
+    #
     def _get_cached_result(self) -> dict[str, object]:
 
         control_panel: ControlPanel | None = getattr(
@@ -1096,7 +1255,13 @@ class ContentPanel(QWidget):
         )
 
 
-    # ===== DATA IMPORT =====
+    ##
+    # @brief Imports a dataset from a file.
+    #
+    # Opens a file selection dialogue, loads the selected
+    # dataset, updates the current application state,
+    # and refreshes the visualization.
+    #
     def _load_file(self) -> None:
 
         selected_file_path, _ = (
@@ -1154,7 +1319,13 @@ class ContentPanel(QWidget):
                 ),
             )
 
-    # ===== DATA SAVE =====
+    ##
+    # @brief Saves the current dataset.
+    #
+    # Persists the active dataset, either to its
+    # existing location or to the RAW dataset
+    # repository when no file association exists.
+    #
     def _save(self) -> None:
 
         # ===== INPUT DATASET =====
@@ -1188,7 +1359,13 @@ class ContentPanel(QWidget):
                 save_error,
             )
 
-    # ===== SAVE AS =====
+    ##
+    # @brief Exports the current dataset to a file.
+    #
+    # Opens a save dialogue, allows the user to choose
+    # an export location, and stores the dataset as
+    # a Huffman-compressed file.
+    #
     def _save_as(self) -> None:
 
         # ===== INPUT DATASET =====
@@ -1256,7 +1433,16 @@ class ContentPanel(QWidget):
                 export_error,
             )
 
-    # ===== NEW RAW SAVE =====
+    ##
+    # @brief Stores a new RAW dataset snapshot.
+    #
+    # Creates a content-addressed dataset file within
+    # the RAW dataset repository and updates the
+    # current file association.
+    #
+    # @param dataset
+    # Dataset to persist.
+    #
     def _save_new_raw_dataset(self, dataset: WorldData) -> None:
 
         generated_filename = (
@@ -1280,7 +1466,16 @@ class ContentPanel(QWidget):
             f"{generated_filename}"
         )
 
-    # ===== EXISTING DATASET SAVE =====
+    ##
+    # @brief Updates an existing dataset file.
+    #
+    # Saves the specified dataset to the currently
+    # associated file location and performs RAW
+    # repository maintenance when required.
+    #
+    # @param dataset
+    # Dataset to persist.
+    #
     def _save_existing_dataset(self, dataset: WorldData) -> None:
 
         # ===== PATH VALIDATION =====
@@ -1340,7 +1535,16 @@ class ContentPanel(QWidget):
             f"saved to: {current_file_path}"
         )
 
-    # ===== DATASET VALIDATION =====
+    ##
+    # @brief Validates dataset availability.
+    #
+    # Ensures that a dataset is currently loaded
+    # before a save operation is performed.
+    #
+    # @return WorldData | None
+    # Dataset ready for persistence or None when
+    # no dataset is available.
+    #
     def _validate_dataset_for_save(self) -> WorldData | None:
 
         dataset = load_default_data()
@@ -1359,7 +1563,13 @@ class ContentPanel(QWidget):
 
         return dataset
 
-    # ===== VISUALIZATION REFRESH =====
+    ##
+    # @brief Refreshes the visualization.
+    #
+    # Clears the current graph and rebuilds the
+    # complete visualization using the latest
+    # dataset and analysis results.
+    #
     def _refresh_visualization(self) -> None:
 
         self._clear_graph()
@@ -1371,7 +1581,15 @@ class ContentPanel(QWidget):
             "refreshed successfully"
         )
 
-    # ===== SAVE ERROR =====
+    ##
+    # @brief Displays a save operation error.
+    #
+    # Presents a dialogue describing an unexpected
+    # failure encountered during dataset persistence.
+    #
+    # @param save_error
+    # Exception describing the failure.
+    #
     def _show_save_error(self, save_error: Exception) -> None:
 
         QMessageBox.critical(
@@ -1385,7 +1603,13 @@ class ContentPanel(QWidget):
         )
 
 
-    # ===== DATA EDITOR =====
+    ##
+    # @brief Opens the dataset editor.
+    #
+    # Displays the data management dialogue, detects
+    # dataset modifications, invalidates outdated
+    # analysis results, and refreshes the visualization.
+    #
     def _open_data_dialog(self) -> None:
 
         # ===== DATA SNAPSHOT =====
@@ -1437,7 +1661,13 @@ class ContentPanel(QWidget):
                     "in the input dataset"
                 )
 
-    # ===== DATA CHANGE HANDLER =====
+    ##
+    # @brief Handles dataset modification events.
+    #
+    # Invalidates cached analysis results and updates
+    # the visualization after the input dataset has
+    # been modified.
+    #
     def _on_data_changed(self) -> None:
 
         # ===== CACHED RESULT =====
@@ -1459,7 +1689,13 @@ class ContentPanel(QWidget):
         # ===== GRAPH REFRESH =====
         self._refresh_visualization()
 
-    # ===== DATA CLEAR =====
+    ##
+    # @brief Removes the current dataset.
+    #
+    # Requests user confirmation, deletes persisted
+    # runtime data, resets the current file state,
+    # and clears the visualization.
+    #
     def _clear_data(self) -> None:
 
         # ===== CONFIRMATION DIALOG =====
@@ -1490,7 +1726,13 @@ class ContentPanel(QWidget):
             # ===== GRAPH RESET =====
             self._clear_graph()
 
-    # ===== LABEL TOGGLE =====
+    ##
+    # @brief Toggles point label visibility.
+    #
+    # Enables or disables entity labels displayed
+    # within the graph visualization and refreshes
+    # the rendered view.
+    #
     def _toggle_data_labels(self) -> None:
 
         # ===== LABEL STATE =====
@@ -1515,7 +1757,15 @@ class ContentPanel(QWidget):
         self._draw_points()
 
 
-    # ===== LOGGER =====
+    ##
+    # @brief Appends an entry to the system log.
+    #
+    # Creates a timestamped log entry and displays
+    # it within the integrated log viewer.
+    #
+    # @param message
+    # Log message to append.
+    #
     def append_system_log(
         self,
         message: str,
@@ -1543,7 +1793,15 @@ class ContentPanel(QWidget):
             f"{message}"
         )
 
-    # ===== LOG WINDOW =====
+    ##
+    # @brief Opens the log viewer window.
+    #
+    # Displays the complete system log history
+    # inside a dedicated dialogue window.
+    #
+    # @param _event
+    # Mouse event triggering the action.
+    #
     def _open_logs_window(
         self,
         _event,

@@ -1,3 +1,7 @@
+# ==================================================
+# PROJECT CONFIGURATION
+# ==================================================
+
 cmake_minimum_required(
     VERSION 3.16
 )
@@ -5,6 +9,10 @@ cmake_minimum_required(
 project(
     AurumveilAlgorithms
 )
+
+# ==================================================
+# COMPILER CONFIGURATION
+# ==================================================
 
 set(
     CMAKE_CXX_STANDARD
@@ -21,10 +29,18 @@ set(
     "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic"
 )
 
+# ==================================================
+# BUILD OUTPUT
+# ==================================================
+
 set(
     CMAKE_RUNTIME_OUTPUT_DIRECTORY
     ${CMAKE_BINARY_DIR}/bin
 )
+
+# ==================================================
+# THIRD-PARTY DEPENDENCIES
+# ==================================================
 
 include(FetchContent)
 
@@ -38,13 +54,22 @@ FetchContent_MakeAvailable(
     json
 )
 
+# ==================================================
+# INCLUDE DIRECTORIES
+# ==================================================
+
 include_directories(
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/algorithms
-        ${CMAKE_SOURCE_DIR}/utils
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/algorithms
+    ${CMAKE_SOURCE_DIR}/utils
 )
 
+# ==================================================
+# EXECUTABLE REGISTRATION
+# ==================================================
+
 function(add_algorithm TARGET)
+
     add_executable(
         ${TARGET}
         ${ARGN}
@@ -55,12 +80,21 @@ function(add_algorithm TARGET)
         PRIVATE
         nlohmann_json::nlohmann_json
     )
-endfunction()
+
+endfunction(add_algorithm)
+
+# ==================================================
+# NETWORK FLOW ALGORITHMS
+# ==================================================
 
 add_algorithm(
     mcmf
     engines/network_flow/flow_optimizer.cpp
 )
+
+# ==================================================
+# CONVEX HULL ALGORITHMS
+# ==================================================
 
 add_algorithm(
     graham
@@ -79,6 +113,10 @@ add_algorithm(
     engines/convex_hull/monotone_convex_hull.cpp
     engines/convex_hull/geometry_utils.cpp
 )
+
+# ==================================================
+# RANGE QUERY ALGORITHMS
+# ==================================================
 
 add_algorithm(
     brute

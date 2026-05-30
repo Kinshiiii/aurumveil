@@ -1,3 +1,15 @@
+/**
+ * @file flow_optimizer.hpp
+ * @brief Minimum-Cost Maximum-Flow optimization engine.
+ *
+ * Provides the core optimization framework used
+ * for resource allocation between miners and mines.
+ *
+ * The optimizer combines a shortest-path strategy
+ * with a maximum-flow strategy to compute a
+ * minimum-cost maximum-flow solution.
+ */
+
 #ifndef FLOW_OPTIMIZER_HPP
 #define FLOW_OPTIMIZER_HPP
 
@@ -10,6 +22,13 @@
 
 using namespace std;
 
+/**
+ * @brief Flow optimization statistics.
+ *
+ * Stores optimization results, execution metrics,
+ * and benchmarking information generated during
+ * a Minimum-Cost Maximum-Flow computation.
+ */
 struct FlowStatistics {
     int maximumFlow{0};
     int minimumCost{0};
@@ -24,8 +43,32 @@ struct FlowStatistics {
     double totalTimeMs{0.0};
 };
 
+/**
+ * @brief Minimum-Cost Maximum-Flow optimizer.
+ *
+ * Maintains a residual flow network and coordinates
+ * shortest-path and maximum-flow strategies to
+ * compute an optimal resource allocation.
+ */
 class FlowOptimizer {
 public:
+
+    /**
+     * @brief Creates a flow optimizer.
+     *
+     * Initializes the flow network and attaches
+     * the selected maximum-flow and shortest-path
+     * strategies.
+     *
+     * @param vertices
+     * Number of vertices in the flow network.
+     *
+     * @param maxflowStrategy
+     * Maximum-flow strategy implementation.
+     *
+     * @param mincostStrategy
+     * Shortest-path strategy implementation.
+     */
     FlowOptimizer(
         size_t vertices,
         IMaxFlowStrategy* maxflowStrategy,
@@ -35,6 +78,24 @@ public:
           maxflowStrategy(maxflowStrategy),
           mincostStrategy(mincostStrategy) {}
 
+    /**
+     * @brief Adds a directed edge to the network.
+     *
+     * Creates both forward and residual edges and
+     * inserts them into the residual graph.
+     *
+     * @param from
+     * Source vertex.
+     *
+     * @param to
+     * Destination vertex.
+     *
+     * @param capacity
+     * Edge capacity.
+     *
+     * @param cost
+     * Edge traversal cost.
+     */
     void addEdge(
         size_t from,
         size_t to,
@@ -64,6 +125,23 @@ public:
         );
     }
 
+    /**
+     * @brief Solves the Minimum-Cost Maximum-Flow problem.
+     *
+     * Repeatedly searches for augmenting paths,
+     * computes admissible flow values, updates the
+     * residual network, and gathers execution
+     * statistics until no additional path exists.
+     *
+     * @param source
+     * Source vertex.
+     *
+     * @param sink
+     * Sink vertex.
+     *
+     * @return FlowStatistics
+     * Optimization result and performance metrics.
+     */
     FlowStatistics solve(
         int source,
         int sink
@@ -154,14 +232,28 @@ public:
         return statistics;
     }
 
+    /**
+     * @brief Returns the residual flow network.
+     *
+     * Provides read-only access to the current
+     * network state after optimization.
+     *
+     * @return const FlowNetwork&
+     * Residual flow network.
+     */
     const FlowNetwork& getGraph() const {
         return flowNetwork;
     }
 
 private:
+
+    /// Residual flow network.
     FlowNetwork flowNetwork;
 
+    /// Maximum-flow strategy.
     IMaxFlowStrategy* maxflowStrategy;
+
+    /// Shortest-path strategy.
     IShortestPathStrategy* mincostStrategy;
 };
 

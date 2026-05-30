@@ -1,3 +1,12 @@
+##
+# @file runtime_initializer.py
+# @brief Runtime initialization and build utilities.
+#
+# Provides functionality for configuring, building,
+# and launching the native algorithm engine used
+# by the Aurumveil platform.
+#
+
 import os
 import logging
 import subprocess
@@ -12,7 +21,12 @@ logging.basicConfig(
 )
 
 
-# ===== FLAGS =====
+##
+# @brief Platform-specific process creation flags.
+#
+# Prevents console windows from being displayed
+# on Microsoft Windows during subprocess execution.
+#
 PROCESS_FLAGS = (
     CREATE_NO_WINDOW
     if os.name == "nt"
@@ -20,7 +34,22 @@ PROCESS_FLAGS = (
 )
 
 
-# ===== PROCESS =====
+##
+# @brief Executes an external process and streams its output.
+#
+# Launches a subprocess, forwards its output to the
+# application logger, and raises an exception when
+# the process terminates with an error.
+#
+# @param command
+# Command and arguments passed to the subprocess.
+#
+# @param working_directory
+# Working directory used during execution.
+#
+# @throws subprocess.CalledProcessError
+# Raised when the process exits with a non-zero code.
+#
 def run_process(command: list[str], working_directory: Path) -> None:
 
     # ===== PROCESS INITIALIZATION =====
@@ -50,7 +79,12 @@ def run_process(command: list[str], working_directory: Path) -> None:
         )
 
 
-# ===== TERMINAL =====
+##
+# @brief Clears the terminal window.
+#
+# Invokes the operating system specific command
+# used to clear the current console session.
+#
 def clear_terminal() -> None:
 
     os.system(
@@ -60,7 +94,18 @@ def clear_terminal() -> None:
     )
 
 
-# ===== BUILD =====
+##
+# @brief Configures and builds the native engine.
+#
+# Creates the build directory when necessary,
+# executes the CMake configuration step,
+# compiles the native C++ components,
+# and clears the terminal after a successful build.
+#
+# @throws subprocess.CalledProcessError
+# Raised when the configuration or compilation
+# process fails.
+#
 def build_application() -> None:
 
     # ===== DIRECTORY =====

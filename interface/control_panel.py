@@ -1,3 +1,12 @@
+##
+# @file control_panel.py
+# @brief Analysis and execution control panel.
+#
+# Provides algorithm configuration, execution,
+# benchmarking, caching, and result management
+# functionality for the Aurumveil platform.
+#
+
 import hashlib
 import json
 import time
@@ -77,13 +86,35 @@ MINCOST_NAMES: dict[str, str] = {
 }
 
 
-# ===== CONTROL PANEL =====
+##
+# @brief Analysis control panel.
+#
+# Serves as the primary interface for configuring
+# optimization, geometry, and range query algorithms.
+#
+# The panel manages algorithm execution, result
+# caching, benchmarking, and communication with
+# the visualization subsystem.
+#
 class ControlPanel(QWidget):
 
-    # ===== SIGNALS =====
+    ##
+    # @brief Emitted when a new log entry is generated.
+    #
     log_signal = Signal(str)
+
+    ##
+    # @brief Emitted when the visualization requires refreshing.
+    #
     refresh_graph_signal = Signal()
 
+    ##
+    # @brief Creates and initializes the control panel.
+    #
+    # Configures execution state, cache management,
+    # signal infrastructure, and user interface
+    # components used to control algorithm execution.
+    #
     def __init__(self) -> None:
         super().__init__()
 
@@ -113,7 +144,20 @@ class ControlPanel(QWidget):
         # ===== USER INTERFACE =====
         self._initialize_ui()
 
-    # ===== UI INITIALIZATION =====
+    ##
+    # @brief Builds the control panel user interface.
+    #
+    # Creates algorithm selection controls, execution
+    # parameter inputs, status indicators, and action
+    # buttons used to configure and execute analyses.
+    #
+    # The interface provides configuration options for:
+    # - maximum flow algorithms,
+    # - minimum-cost pathfinding algorithms,
+    # - convex hull algorithms,
+    # - range query algorithms,
+    # - benchmarking parameters.
+    #
     def _initialize_ui(self) -> None:
 
         # ===== MAIN LAYOUT =====
@@ -662,7 +706,14 @@ class ControlPanel(QWidget):
         # ===== INITIAL STATE =====
         self._update_buttons_state()
 
-    # ===== ANALYSIS START =====
+    ##
+    # @brief Starts algorithm execution.
+    #
+    # Validates the current configuration, executes
+    # the selected algorithms, collects benchmarking
+    # metrics, and updates the user interface with
+    # execution results.
+    #
     def on_start(self) -> None:
 
         # ===== EXECUTION RESET =====
@@ -739,7 +790,22 @@ class ControlPanel(QWidget):
         # ===== EXECUTION FINALIZATION =====
         self._finalize_execution()
 
-    # ===== ALGORITHM EXECUTION =====
+    ##
+    # @brief Executes the selected analysis pipeline.
+    #
+    # Performs cache validation, executes optimization
+    # and geometry algorithms when necessary, handles
+    # execution errors, and stores successful results.
+    #
+    # @param flow_algorithm
+    # Selected maximum flow algorithm.
+    #
+    # @param cost_algorithm
+    # Selected minimum-cost pathfinding algorithm.
+    #
+    # @param geometry_algorithm
+    # Selected convex hull algorithm.
+    #
     def run_algorithm(
         self,
         flow_algorithm: str,
@@ -832,7 +898,14 @@ class ControlPanel(QWidget):
                 error
             )
 
-    # ===== DWARF SEARCH =====
+    ##
+    # @brief Locates the loudest dwarf within a range.
+    #
+    # Executes the selected range query algorithm,
+    # identifies the loudest dwarf contained within
+    # the specified search interval, and highlights
+    # the corresponding mine on the visualization.
+    #
     def on_find_loudest_dwarf(self) -> None:
 
         self.execution_failed = (
@@ -1007,7 +1080,14 @@ class ControlPanel(QWidget):
                 "crash"
             )
 
-    # ===== RESULT EXPORT =====
+    ##
+    # @brief Exports the current analysis result.
+    #
+    # Builds an export payload containing the selected
+    # algorithm configuration, input dataset, and
+    # analysis results, then stores it as a compressed
+    # output file.
+    #
     def save_result(self) -> None:
 
         # ===== INPUT DATASET =====
@@ -1105,7 +1185,19 @@ class ControlPanel(QWidget):
             )
 
 
-    # ===== SELECTION HELPERS =====
+    ##
+    # @brief Returns the selected button label.
+    #
+    # Retrieves the text associated with the currently
+    # selected button in the specified button group.
+    #
+    # @param group
+    # Button group to inspect.
+    #
+    # @return str | None
+    # Selected button label or None when no button
+    # is selected.
+    #
     @staticmethod
     def _get_selected(group: QButtonGroup) -> str | None:
 
@@ -1118,7 +1210,17 @@ class ControlPanel(QWidget):
 
         return selected_button.text()
 
-    # ===== SELECTED ALGORITHMS =====
+    ##
+    # @brief Retrieves the selected algorithms.
+    #
+    # Obtains the currently selected flow, pathfinding,
+    # and geometry algorithms and validates that all
+    # required selections have been made.
+    #
+    # @return tuple[str, str, str] | None
+    # Selected algorithm names or None when the
+    # configuration is incomplete.
+    #
     def _get_selected_algorithms(self) -> tuple[str, str, str] | None:
 
         # ===== FLOW ALGORITHM =====
@@ -1160,7 +1262,16 @@ class ControlPanel(QWidget):
             geometry_algorithm,
         )
 
-    # ===== RANGE PARSING =====
+    ##
+    # @brief Parses a range query expression.
+    #
+    # Converts a textual range expression into a
+    # numerical interval used by range query algorithms.
+    #
+    # @return tuple[int, int] | None
+    # Parsed range boundaries or None when the
+    # expression is invalid.
+    #
     def _parse_range_expression(self) -> tuple[int, int] | None:
 
         # ===== RANGE INPUT =====
@@ -1199,7 +1310,15 @@ class ControlPanel(QWidget):
 
             return None
 
-    # ===== RANGE VALIDATION =====
+    ##
+    # @brief Validates dwarf search prerequisites.
+    #
+    # Ensures that a valid analysis result exists
+    # before executing a range query operation.
+    #
+    # @return bool
+    # True when the search can proceed.
+    #
     def _validate_dwarf_search(self) -> bool:
 
         # ===== RESULT VALIDATION =====
@@ -1212,7 +1331,18 @@ class ControlPanel(QWidget):
 
         return True
 
-    # ===== VALIDATED DATASET =====
+    ##
+    # @brief Loads and validates the active dataset.
+    #
+    # Retrieves the current dataset and applies
+    # failure handling when no data is available.
+    #
+    # @param error_message
+    # Log message emitted when validation fails.
+    #
+    # @return WorldData | None
+    # Valid dataset or None when unavailable.
+    #
     def _get_validated_dataset(self, error_message: str) -> WorldData | None:
 
         dataset: WorldData | None = (
@@ -1241,7 +1371,19 @@ class ControlPanel(QWidget):
         return None
 
 
-    # ===== MEMORY CACHE =====
+    ##
+    # @brief Attempts to load a cached memory result.
+    #
+    # Reuses an already available execution result
+    # when the current execution signature matches
+    # the previously executed configuration.
+    #
+    # @param execution_signature
+    # Unique execution signature.
+    #
+    # @return bool
+    # True when a cached result was loaded.
+    #
     def _load_memory_cache(self, execution_signature: str) -> bool:
 
         content_panel: ContentPanel | None = (
@@ -1276,7 +1418,24 @@ class ControlPanel(QWidget):
 
         return True
 
-    # ===== FILE CACHE =====
+    ##
+    # @brief Attempts to load a cached file result.
+    #
+    # Restores a previously exported analysis result
+    # from persistent storage when cache mode is enabled.
+    #
+    # @param result_file_path
+    # Cached result file location.
+    #
+    # @param execution_signature
+    # Unique execution signature.
+    #
+    # @param output_filename
+    # Cached output filename.
+    #
+    # @return bool
+    # True when a cached result was loaded.
+    #
     def _load_file_cache(
         self,
         result_file_path: Path,
@@ -1352,7 +1511,28 @@ class ControlPanel(QWidget):
 
         return True
 
-    # ===== ALGORITHM EXECUTION =====
+    ##
+    # @brief Executes the selected native algorithms.
+    #
+    # Invokes the configured optimization and geometry
+    # executables and collects their results into a
+    # unified response structure.
+    #
+    # @param dataset
+    # Input dataset supplied to the algorithms.
+    #
+    # @param flow_algorithm
+    # Selected maximum flow algorithm.
+    #
+    # @param cost_algorithm
+    # Selected minimum-cost pathfinding algorithm.
+    #
+    # @param geometry_algorithm
+    # Selected convex hull algorithm.
+    #
+    # @return dict[str, dict[str, object]]
+    # Aggregated algorithm results.
+    #
     @staticmethod
     def _execute_algorithms(
         dataset: WorldData,
@@ -1401,7 +1581,18 @@ class ControlPanel(QWidget):
             ),
         }
 
-    # ===== EXECUTION ERRORS =====
+    ##
+    # @brief Extracts execution errors from results.
+    #
+    # Scans algorithm outputs and collects formatted
+    # error messages reported by failed executions.
+    #
+    # @param execution_result
+    # Aggregated algorithm results.
+    #
+    # @return list[str]
+    # Collection of execution error messages.
+    #
     @staticmethod
     def _collect_execution_errors(execution_result: dict[str, dict[str, object]]) -> list[str]:
 
@@ -1451,7 +1642,18 @@ class ControlPanel(QWidget):
         return execution_errors
 
 
-    # ===== STATUS UPDATE =====
+    ##
+    # @brief Updates execution status information.
+    #
+    # Updates the status and execution time labels
+    # displayed within the control panel.
+    #
+    # @param result_text
+    # Status message to display.
+    #
+    # @param time_text
+    # Optional execution time value.
+    #
     def _set_status(
         self,
         result_text: str,
@@ -1467,7 +1669,12 @@ class ControlPanel(QWidget):
                 f"<b>Time:</b> {time_text}"
             )
 
-    # ===== BUTTON STATE MANAGEMENT =====
+    ##
+    # @brief Updates action button availability.
+    #
+    # Enables or disables controls according to the
+    # current algorithm selection and result state.
+    #
     def _update_buttons_state(self) -> None:
 
         # ===== SELECTED FLOW ALGORITHM =====
@@ -1554,7 +1761,12 @@ class ControlPanel(QWidget):
             and selected_range_algorithm is not None
         )
 
-    # ===== EXECUTION STATE =====
+    ##
+    # @brief Resets execution state flags.
+    #
+    # Clears temporary execution indicators and
+    # prepares the control panel for a new analysis.
+    #
     def _reset_execution_state(self) -> None:
 
         self.execution_failed = (
@@ -1569,7 +1781,12 @@ class ControlPanel(QWidget):
             False
         )
 
-    # ===== EXECUTION STATUS =====
+    ##
+    # @brief Initializes execution status indicators.
+    #
+    # Updates the user interface to reflect that an
+    # analysis is currently running.
+    #
     def _initialize_execution_status(self) -> None:
 
         self._set_status(
@@ -1577,7 +1794,12 @@ class ControlPanel(QWidget):
             "...",
         )
 
-    # ===== EXECUTION FINALIZATION =====
+    ##
+    # @brief Finalizes a successful execution.
+    #
+    # Updates status information, logs result summaries,
+    # and triggers visualization refresh operations.
+    #
     def _finalize_execution(self) -> None:
 
         if self.execution_failed:
@@ -1597,7 +1819,19 @@ class ControlPanel(QWidget):
         self.refresh_graph_signal.emit()
 
 
-    # ===== EXECUTION SUCCESS =====
+    ##
+    # @brief Processes successful execution results.
+    #
+    # Stores execution results, updates cache metadata,
+    # and enables functionality dependent on analysis
+    # output.
+    #
+    # @param execution_result
+    # Aggregated algorithm results.
+    #
+    # @param execution_signature
+    # Unique execution signature.
+    #
     def _handle_execution_success(
         self,
         execution_result: dict[
@@ -1625,7 +1859,15 @@ class ControlPanel(QWidget):
 
         self._update_buttons_state()
 
-    # ===== EXECUTION FAILURE =====
+    ##
+    # @brief Processes algorithm execution errors.
+    #
+    # Logs reported execution failures and updates
+    # the control panel status accordingly.
+    #
+    # @param execution_errors
+    # Collection of execution error messages.
+    #
     def _handle_execution_errors(
         self,
         execution_errors: list[str],
@@ -1649,7 +1891,15 @@ class ControlPanel(QWidget):
             "error"
         )
 
-    # ===== EXECUTION EXCEPTION =====
+    ##
+    # @brief Handles unexpected execution exceptions.
+    #
+    # Reports an unhandled execution failure and
+    # transitions the control panel into an error state.
+    #
+    # @param error
+    # Exception raised during execution.
+    #
     def _handle_execution_exception(
         self,
         error: Exception,
@@ -1672,7 +1922,22 @@ class ControlPanel(QWidget):
             "crash"
         )
 
-    # ===== BENCHMARK RESULTS =====
+    ##
+    # @brief Processes benchmark execution results.
+    #
+    # Updates performance statistics and dispatches
+    # benchmark summaries according to the number of
+    # executed iterations.
+    #
+    # @param execution_count
+    # Number of completed executions.
+    #
+    # @param benchmark_metrics
+    # Collected benchmark statistics.
+    #
+    # @param total_execution_time_ms
+    # Total benchmark duration.
+    #
     def _handle_benchmark_results(
         self,
         execution_count: int,
@@ -1703,7 +1968,15 @@ class ControlPanel(QWidget):
             )
 
 
-    # ===== BENCHMARK METRICS =====
+    ##
+    # @brief Creates benchmark metric accumulators.
+    #
+    # Initializes containers used to aggregate
+    # performance measurements across benchmark runs.
+    #
+    # @return dict[str, float]
+    # Initialized benchmark metrics.
+    #
     @staticmethod
     def _initialize_benchmark_metrics() -> dict[str, float]:
 
@@ -1726,7 +1999,18 @@ class ControlPanel(QWidget):
             ),
         }
 
-    # ===== BENCHMARK UPDATE =====
+    ##
+    # @brief Updates aggregated benchmark statistics.
+    #
+    # Extracts timing information from the current
+    # execution result and accumulates benchmark metrics.
+    #
+    # @param benchmark_metrics
+    # Metric accumulators updated in place.
+    #
+    # @param cached_result
+    # Result containing timing information.
+    #
     @staticmethod
     def _update_benchmark_metrics(
         benchmark_metrics: dict[str, float],
@@ -1815,7 +2099,18 @@ class ControlPanel(QWidget):
             geometry_execution_time_ms
         )
 
-    # ===== EXECUTION TIME =====
+    ##
+    # @brief Calculates total execution duration.
+    #
+    # Computes the elapsed execution time in
+    # milliseconds from the provided start timestamp.
+    #
+    # @param execution_start_time
+    # Execution start timestamp.
+    #
+    # @return float
+    # Total execution time in milliseconds.
+    #
     @staticmethod
     def _calculate_total_execution_time(execution_start_time: float) -> float:
 
@@ -1825,7 +2120,15 @@ class ControlPanel(QWidget):
         ) * 1000
 
 
-    # ===== CONVEX HULL =====
+    ##
+    # @brief Retrieves convex hull points.
+    #
+    # Extracts the convex hull generated by the geometry
+    # algorithm from the cached execution result.
+    #
+    # @return list[dict[str, object]] | None
+    # Convex hull points or None when unavailable.
+    #
     def _get_convex_hull_points(self) -> list[dict[str, object]] | None:
 
         if self.cached_result is None:
@@ -1863,7 +2166,22 @@ class ControlPanel(QWidget):
 
         return convex_hull_points
 
-    # ===== ORDERED PAYLOAD =====
+    ##
+    # @brief Builds a range query payload from a convex hull.
+    #
+    # Converts convex hull points into an ordered payload
+    # containing mine locations and associated warden
+    # loudness values.
+    #
+    # @param hull
+    # Convex hull points.
+    #
+    # @param data
+    # Input dataset.
+    #
+    # @return dict[str, object]
+    # Ordered range query payload.
+    #
     @staticmethod
     def _build_ordered_payload_from_hull(
         hull: list[dict[str, object]],
@@ -1932,7 +2250,27 @@ class ControlPanel(QWidget):
             ),
         }
 
-    # ===== RANGE QUERY EXECUTION =====
+    ##
+    # @brief Executes a range query search.
+    #
+    # Invokes the selected range query algorithm using
+    # the specified search interval and payload.
+    #
+    # @param selected_range_algorithm
+    # Selected range query algorithm.
+    #
+    # @param ordered_payload
+    # Ordered convex hull payload.
+    #
+    # @param range_start
+    # Lower search boundary.
+    #
+    # @param range_end
+    # Upper search boundary.
+    #
+    # @return dict[str, object]
+    # Range query result.
+    #
     @staticmethod
     def _execute_dwarf_search(
         selected_range_algorithm: str,
@@ -1950,7 +2288,15 @@ class ControlPanel(QWidget):
             ),
         )
 
-    # ===== GRAPH HIGHLIGHT =====
+    ##
+    # @brief Highlights the loudest dwarf location.
+    #
+    # Updates the graph visualization to emphasize
+    # the mine associated with the detected loudest dwarf.
+    #
+    # @param loudest_dwarf
+    # Loudest dwarf search result.
+    #
     def _highlight_loudest_dwarf(self, loudest_dwarf: dict[str, object] | None) -> None:
 
         if loudest_dwarf is None:
@@ -1973,7 +2319,15 @@ class ControlPanel(QWidget):
         )
 
 
-    # ===== PANEL RESOLUTION =====
+    ##
+    # @brief Resolves the associated content panel.
+    #
+    # Traverses the widget hierarchy and returns the
+    # content panel connected to the control panel.
+    #
+    # @return ContentPanel | None
+    # Associated content panel instance.
+    #
     def _get_content_panel(self) -> ContentPanel | None:
 
         parent_widget: QWidget | None = (
@@ -2000,7 +2354,18 @@ class ControlPanel(QWidget):
             None,
         )
 
-    # ===== EXECUTION COUNT =====
+    ##
+    # @brief Determines the effective execution count.
+    #
+    # Returns the number of benchmark iterations that
+    # should be executed, taking cache mode into account.
+    #
+    # @param execution_iterations
+    # User-requested iteration count.
+    #
+    # @return int
+    # Effective execution count.
+    #
     def _get_execution_count(self, execution_iterations: int) -> int:
 
         content_panel: ContentPanel | None = (
@@ -2016,7 +2381,27 @@ class ControlPanel(QWidget):
             else execution_iterations
         )
 
-    # ===== BENCHMARK EXECUTION =====
+    ##
+    # @brief Executes benchmark iterations.
+    #
+    # Repeatedly runs the selected algorithms and
+    # accumulates benchmark performance metrics.
+    #
+    # @param execution_count
+    # Number of executions to perform.
+    #
+    # @param flow_algorithm
+    # Selected maximum flow algorithm.
+    #
+    # @param cost_algorithm
+    # Selected minimum-cost pathfinding algorithm.
+    #
+    # @param geometry_algorithm
+    # Selected geometry algorithm.
+    #
+    # @return dict[str, float]
+    # Aggregated benchmark metrics.
+    #
     def _run_benchmark_iterations(
         self,
         execution_count: int,
@@ -2049,7 +2434,18 @@ class ControlPanel(QWidget):
 
         return benchmark_metrics
 
-    # ===== EXECUTION LOGGING =====
+    ##
+    # @brief Logs execution completion information.
+    #
+    # Records benchmark and execution completion
+    # information in the system log.
+    #
+    # @param execution_iterations
+    # Requested iteration count.
+    #
+    # @param execution_count
+    # Actual execution count.
+    #
     def _log_execution_completion(
         self,
         execution_iterations: int,
@@ -2070,7 +2466,15 @@ class ControlPanel(QWidget):
                 "finished successfully"
             )
 
-    # ===== SINGLE EXECUTION RESULTS =====
+    ##
+    # @brief Processes single-run benchmark results.
+    #
+    # Updates execution statistics after a single
+    # algorithm execution.
+    #
+    # @param total_execution_time_ms
+    # Total execution duration.
+    #
     def _handle_single_execution_results(
         self,
         total_execution_time_ms: float,
@@ -2081,7 +2485,21 @@ class ControlPanel(QWidget):
             f"{total_execution_time_ms:.2f} ms"
         )
 
-    # ===== MULTI EXECUTION RESULTS =====
+    ##
+    # @brief Processes multi-run benchmark results.
+    #
+    # Computes average execution metrics and stores
+    # benchmark statistics within the cached result.
+    #
+    # @param execution_count
+    # Number of benchmark runs.
+    #
+    # @param benchmark_metrics
+    # Aggregated benchmark metrics.
+    #
+    # @param total_execution_time_ms
+    # Total benchmark duration.
+    #
     def _handle_multi_execution_results(
         self,
         execution_count: int,
@@ -2125,7 +2543,16 @@ class ControlPanel(QWidget):
             ),
         }
 
-    # ===== DWARF SEARCH ERROR =====
+    ##
+    # @brief Handles range query execution errors.
+    #
+    # Reports search failures, updates execution state,
+    # and disables functionality dependent on valid
+    # range query results.
+    #
+    # @param dwarf_search_result
+    # Failed range query result.
+    #
     def _handle_dwarf_search_error(self, dwarf_search_result: dict[str, object]) -> None:
 
         self.execution_failed = (
@@ -2155,7 +2582,29 @@ class ControlPanel(QWidget):
         )
 
 
-    # ===== EXECUTION SIGNATURE =====
+    ##
+    # @brief Generates a unique execution signature.
+    #
+    # Creates deterministic identifiers based on the
+    # selected algorithms and canonical dataset content.
+    # The generated signature is used for cache lookup
+    # and result file naming.
+    #
+    # @param dataset
+    # Input dataset.
+    #
+    # @param flow_algorithm
+    # Selected maximum flow algorithm.
+    #
+    # @param cost_algorithm
+    # Selected minimum-cost pathfinding algorithm.
+    #
+    # @param geometry_algorithm
+    # Selected geometry algorithm.
+    #
+    # @return tuple[str, str]
+    # Execution signature and output filename.
+    #
     @staticmethod
     def _build_execution_signature(
         dataset: WorldData,
@@ -2225,7 +2674,19 @@ class ControlPanel(QWidget):
             output_filename,
         )
 
-    # ===== RESULT FILE PATH =====
+    ##
+    # @brief Resolves the output artifact path.
+    #
+    # Creates the artifacts directory when necessary
+    # and returns the destination path for a generated
+    # result file.
+    #
+    # @param output_filename
+    # Result filename.
+    #
+    # @return Path
+    # Full artifact file path.
+    #
     @staticmethod
     def _get_result_file_path(output_filename: str) -> Path:
 
@@ -2245,7 +2706,31 @@ class ControlPanel(QWidget):
         )
 
 
-    # ===== EXPORT PAYLOAD =====
+    ##
+    # @brief Builds an exportable result payload.
+    #
+    # Combines algorithm configuration, canonical input
+    # data, and execution results into a single structure
+    # suitable for persistence.
+    #
+    # @param flow_algorithm
+    # Selected maximum flow algorithm.
+    #
+    # @param cost_algorithm
+    # Selected minimum-cost pathfinding algorithm.
+    #
+    # @param geometry_algorithm
+    # Selected geometry algorithm.
+    #
+    # @param canonical_dataset
+    # Canonical dataset representation.
+    #
+    # @param cached_result
+    # Cached execution result.
+    #
+    # @return dict[str, object]
+    # Export payload.
+    #
     @staticmethod
     def _build_export_payload(
         flow_algorithm: str,
@@ -2281,7 +2766,19 @@ class ControlPanel(QWidget):
             ),
         }
 
-    # ===== COMPRESSED EXPORT =====
+    ##
+    # @brief Exports a compressed result artifact.
+    #
+    # Serializes the provided payload, compresses it
+    # using Huffman coding, and writes the resulting
+    # artifact to disk.
+    #
+    # @param output_file_path
+    # Destination file path.
+    #
+    # @param export_payload
+    # Payload to export.
+    #
     @staticmethod
     def _export_compressed_payload(
         output_file_path: Path,
@@ -2311,7 +2808,23 @@ class ControlPanel(QWidget):
             )
 
 
-    # ===== FLOW SUMMARY =====
+    ##
+    # @brief Logs flow optimization results.
+    #
+    # Generates a formatted summary containing
+    # optimization statistics, algorithm selections,
+    # objective values, and execution timings.
+    #
+    # @param assignment_result
+    # Flow optimization result.
+    #
+    # @param benchmark_result
+    # Benchmark statistics.
+    #
+    # @param use_average_metrics
+    # Determines whether benchmark averages or
+    # single-execution timings should be reported.
+    #
     def _log_flow_summary(
         self,
         assignment_result: dict[str, object],
@@ -2489,7 +3002,15 @@ class ControlPanel(QWidget):
             )
         )
 
-    # ===== ASSIGNMENT SUMMARY =====
+    ##
+    # @brief Logs resource allocation assignments.
+    #
+    # Generates a formatted summary of all miner-to-mine
+    # assignments produced by the flow optimization stage.
+    #
+    # @param assignment_entries
+    # Collection of assignment records.
+    #
     def _log_assignment_summary(
         self,
         assignment_entries: list[
@@ -2554,7 +3075,26 @@ class ControlPanel(QWidget):
                 f"{mine_position_y})"
             )
 
-    # ===== GEOMETRY SUMMARY =====
+    ##
+    # @brief Logs geometry analysis results.
+    #
+    # Reports convex hull statistics and execution
+    # timing information for the selected geometry
+    # algorithm.
+    #
+    # @param geometry_result
+    # Geometry analysis result.
+    #
+    # @param benchmark_result
+    # Benchmark statistics.
+    #
+    # @param use_average_metrics
+    # Determines whether average benchmark metrics
+    # should be reported.
+    #
+    # @return list[dict[str, object]]
+    # Convex hull points.
+    #
     def _log_geometry_summary(
         self,
         geometry_result: dict[str, object],
@@ -2624,7 +3164,15 @@ class ControlPanel(QWidget):
 
         return convex_hull_points
 
-    # ===== BOUNDARY POINTS =====
+    ##
+    # @brief Logs convex hull boundary points.
+    #
+    # Outputs all points belonging to the protected
+    # kingdom boundary in traversal order.
+    #
+    # @param convex_hull_points
+    # Convex hull vertices.
+    #
     def _log_boundary_points(
         self,
         convex_hull_points: list[dict[str, object]],
@@ -2680,7 +3228,15 @@ class ControlPanel(QWidget):
                 f"{point_y})"
             )
 
-    # ===== BOUNDARY SEGMENTS =====
+    ##
+    # @brief Logs boundary route segments.
+    #
+    # Generates a sequential representation of the
+    # inspection route formed by convex hull edges.
+    #
+    # @param convex_hull_points
+    # Convex hull vertices.
+    #
     def _log_boundary_segments(
         self,
         convex_hull_points: list[dict[str, object]],
@@ -2748,7 +3304,16 @@ class ControlPanel(QWidget):
                 f"{next_point_id}"
             )
 
-    # ===== RESULT LOGGER =====
+    ##
+    # @brief Generates a complete execution report.
+    #
+    # Aggregates optimization, assignment, geometry,
+    # and boundary information into a structured
+    # execution summary written to the system log.
+    #
+    # @param result
+    # Combined execution result.
+    #
     def _log_result_summary(self, result: dict[str, object]) -> None:
 
         # ===== ASSIGNMENT RESULT =====
@@ -2843,7 +3408,18 @@ class ControlPanel(QWidget):
         )
 
 
-    # ===== DWARF DATA =====
+    ##
+    # @brief Extracts dwarf information from a result entry.
+    #
+    # Converts a serialized dwarf record into strongly
+    # typed values used by the reporting subsystem.
+    #
+    # @param dwarf
+    # Dwarf result entry.
+    #
+    # @return tuple[str, int, float, float]
+    # Identifier, loudness, and coordinates.
+    #
     @staticmethod
     def _extract_dwarf_data(
         dwarf: dict[str, object],
@@ -2882,7 +3458,18 @@ class ControlPanel(QWidget):
             dwarf_y,
         )
 
-    # ===== DWARF LOGGER =====
+    ##
+    # @brief Logs range query search results.
+    #
+    # Reports the loudest detected dwarf together with
+    # search statistics and execution timing.
+    #
+    # @param result
+    # Range query result.
+    #
+    # @param selected_algorithm
+    # Executed range query algorithm.
+    #
     def _log_dwarf_result(
         self,
         result: dict[str, object],
@@ -2993,7 +3580,21 @@ class ControlPanel(QWidget):
         )
 
 
-    # ===== TREE PREFIX =====
+    ##
+    # @brief Generates a tree-structure prefix.
+    #
+    # Produces a textual tree connector used when
+    # formatting hierarchical log entries.
+    #
+    # @param index
+    # Current element index.
+    #
+    # @param size
+    # Total number of elements.
+    #
+    # @return str
+    # Tree connector prefix.
+    #
     @staticmethod
     def _tree_prefix(index: int, size: int) -> str:
 
@@ -3003,7 +3604,21 @@ class ControlPanel(QWidget):
             else "├─"
         )
 
-    # ===== BRANCH ROW =====
+    ##
+    # @brief Formats an intermediate tree row.
+    #
+    # Creates a formatted log row representing
+    # a non-terminal branch entry.
+    #
+    # @param label
+    # Entry label.
+    #
+    # @param value
+    # Entry value.
+    #
+    # @return str
+    # Formatted log row.
+    #
     @staticmethod
     def _branch_row(label: str, value: str) -> str:
 
@@ -3012,7 +3627,21 @@ class ControlPanel(QWidget):
             f"{value}"
         )
 
-    # ===== TERMINAL ROW =====
+    ##
+    # @brief Formats an intermediate tree row.
+    #
+    # Creates a formatted log row representing
+    # a non-terminal branch entry.
+    #
+    # @param label
+    # Entry label.
+    #
+    # @param value
+    # Entry value.
+    #
+    # @return str
+    # Formatted log row.
+    #
     @staticmethod
     def _terminal_row(label: str, value: str) -> str:
 

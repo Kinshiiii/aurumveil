@@ -1,3 +1,13 @@
+##
+# @file data_dialog.py
+# @brief Data management dialogue for the Aurumveil platform.
+#
+# Provides functionality for viewing, editing,
+# validating, and persisting miners, mines,
+# and wardens stored within the application data model.
+#
+
+from pathlib import Path
 from typing import cast
 
 from PySide6.QtCore import (
@@ -8,6 +18,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
     QColor,
     QFont,
+    QIcon,
 )
 
 from PySide6.QtWidgets import (
@@ -37,7 +48,6 @@ from domain.repository import (
     save_default_data,
 )
 
-
 # ===== RESOURCES =====
 RESOURCES: list[str] = [
     "Gold",
@@ -49,17 +59,45 @@ RESOURCES: list[str] = [
 ]
 
 
-# ===== DATA DIALOG =====
+##
+# @brief World data management dialogue.
+#
+# Provides an interactive interface for managing
+# miners, mines, and wardens. The dialogue allows
+# users to create, modify, remove, and persist
+# world entities used by the optimization engine.
+#
 class DataDialog(QDialog):
 
-    # ===== SIGNALS =====
+    ##
+    # @brief Emitted after world data has been modified.
+    #
     data_changed = Signal()
 
+    ##
+    # @brief Creates and initializes the data dialogue.
+    #
+    # Configures the dialogue window, builds the user
+    # interface, loads persisted world data, and
+    # populates all data tables.
+    #
     def __init__(self) -> None:
         super().__init__()
 
         # ===== WINDOW =====
         self.setWindowTitle("World Data Manager")
+
+        # ===== WINDOW ICON =====
+        icon_path = (
+            Path(__file__).resolve().parent.parent
+            / "assets"
+            / "icons"
+            / "aurumveil.ico"
+        )
+
+        self.setWindowIcon(
+            QIcon(str(icon_path))
+        )
 
         self.resize(850, 500)
 
@@ -74,7 +112,14 @@ class DataDialog(QDialog):
         if world_data:
             self._load_to_tables(world_data)
 
-    # ===== USER INTERFACE =====
+    ##
+    # @brief Builds the dialogue user interface.
+    #
+    # Creates all layouts, tables, labels, and
+    # action buttons used for managing world data.
+    # The method also establishes signal connections
+    # and configures default widget states.
+    #
     def _initialize_ui(self) -> None:
 
         # ===== MAIN LAYOUT =====
@@ -297,7 +342,18 @@ class DataDialog(QDialog):
             button_layout
         )
 
-    # ===== TABLE BUILDERS =====
+    ##
+    # @brief Creates and configures a table widget.
+    #
+    # Initializes a table with the specified column
+    # headers and configures row-based multi-selection.
+    #
+    # @param headers
+    # Column header labels displayed by the table.
+    #
+    # @return QTableWidget
+    # Configured table widget instance.
+    #
     @staticmethod
     def _build_table(headers: list[str]) -> QTableWidget:
 
@@ -324,6 +380,18 @@ class DataDialog(QDialog):
 
         return table_widget
 
+    ##
+    # @brief Creates a read-only identifier table item.
+    #
+    # Generates a bold table item intended for displaying
+    # immutable entity identifiers.
+    #
+    # @param text
+    # Identifier text displayed by the item.
+    #
+    # @return QTableWidgetItem
+    # Configured identifier table item.
+    #
     @staticmethod
     def _build_identifier_item(text: str) -> QTableWidgetItem:
 
@@ -345,7 +413,18 @@ class DataDialog(QDialog):
 
         return table_item
 
-    # ===== VALUE PARSING =====
+    ##
+    # @brief Safely converts text to a floating-point value.
+    #
+    # Returns zero when the provided value cannot be
+    # converted to a valid floating-point number.
+    #
+    # @param input_value
+    # Text representation of a numeric value.
+    #
+    # @return float
+    # Parsed floating-point value or zero.
+    #
     @staticmethod
     def _safe_float(input_value: str) -> float:
 
@@ -355,6 +434,18 @@ class DataDialog(QDialog):
         except ValueError:
             return float(0)
 
+    ##
+    # @brief Safely converts text to an integer value.
+    #
+    # Returns zero when the provided value cannot be
+    # converted to a valid integer.
+    #
+    # @param input_value
+    # Text representation of a numeric value.
+    #
+    # @return int
+    # Parsed integer value or zero.
+    #
     @staticmethod
     def _safe_int(input_value: str) -> int:
 
@@ -364,6 +455,21 @@ class DataDialog(QDialog):
         except ValueError:
             return 0
 
+    ##
+    # @brief Safely normalizes text input.
+    #
+    # Removes surrounding whitespace and returns a
+    # fallback value when the resulting text is empty.
+    #
+    # @param input_text
+    # Text value to normalize.
+    #
+    # @param default
+    # Value returned when the input is empty.
+    #
+    # @return str
+    # Normalized text value.
+    #
     @staticmethod
     def _safe_str(input_text: str, default: str = "") -> str:
 
@@ -373,7 +479,25 @@ class DataDialog(QDialog):
             else default
         )
 
-    # ===== TABLE HELPERS =====
+
+    ##
+    # @brief Retrieves text from a table cell.
+    #
+    # Returns an empty string when the specified cell
+    # does not contain a table item.
+    #
+    # @param table_widget
+    # Source table widget.
+    #
+    # @param row_index
+    # Index of the target row.
+    #
+    # @param column_index
+    # Index of the target column.
+    #
+    # @return str
+    # Cell text or an empty string.
+    #
     @staticmethod
     def _get_cell_text(table_widget: QTableWidget, row_index: int, column_index: int,) -> str:
 
@@ -390,7 +514,13 @@ class DataDialog(QDialog):
             else ""
         )
 
-    # ===== IDENTIFIER REFRESH =====
+    ##
+    # @brief Regenerates entity identifiers.
+    #
+    # Updates miner, mine, and warden identifiers
+    # to ensure sequential numbering after rows
+    # have been added, removed, or reordered.
+    #
     def _refresh_identifiers(self) -> None:
 
         # ===== MINER IDENTIFIERS =====
@@ -425,7 +555,26 @@ class DataDialog(QDialog):
                 ),
             )
 
-    # ===== VALIDATION =====
+    ##
+    # @brief Validates all world data entered by the user.
+    #
+    # Performs structural, numerical, and geometric
+    # validation of miners, mines, and wardens.
+    #
+    # The validation process verifies:
+    # - minimum entity count requirements,
+    # - mine geometry constraints,
+    # - coordinate completeness,
+    # - mine capacity values,
+    # - warden alert volume values.
+    #
+    # Invalid cells are highlighted and validation
+    # states are propagated to the corresponding
+    # user interface widgets.
+    #
+    # @return list[str]
+    # Collection of validation error messages.
+    #
     def _validate(self) -> list[str]:
         validation_errors: list[str] = []
 
@@ -818,7 +967,22 @@ class DataDialog(QDialog):
 
         return validation_errors
 
-    # ===== CELL MARKING =====
+    ##
+    # @brief Marks a table cell as invalid.
+    #
+    # Applies visual validation feedback to the specified
+    # cell by changing its background colour and displaying
+    # an explanatory tooltip message.
+    #
+    # @param table_widget
+    # Target table widget.
+    #
+    # @param row_index
+    # Index of the target row.
+    #
+    # @param column_index
+    # Index of the target column.
+    #
     @staticmethod
     def _mark_cell(table_widget: QTableWidget, row_index: int, column_index: int) -> None:
 
@@ -841,7 +1005,21 @@ class DataDialog(QDialog):
                 "This field contains an invalid or missing value."
             )
 
-    # ===== CELL RESET =====
+    ##
+    # @brief Removes validation feedback from a table cell.
+    #
+    # Restores the default appearance of the specified cell
+    # and removes any validation tooltip previously applied.
+    #
+    # @param table_widget
+    # Target table widget.
+    #
+    # @param row_index
+    # Index of the target row.
+    #
+    # @param column_index
+    # Index of the target column.
+    #
     @staticmethod
     def _clear_mark(table_widget: QTableWidget, row_index: int, column_index: int) -> None:
 
@@ -862,7 +1040,13 @@ class DataDialog(QDialog):
             # ===== RESET TOOLTIP =====
             table_item.setToolTip("")
 
-    # ===== MINER MANAGEMENT =====
+    ##
+    # @brief Adds a new miner entry to the table.
+    #
+    # Creates a new miner row, assigns a unique identifier,
+    # initializes default values, and configures the
+    # resource selection widget.
+    #
     def _add_miner(self) -> None:
 
         # ===== ROW =====
@@ -913,7 +1097,13 @@ class DataDialog(QDialog):
                 QTableWidgetItem(""),
             )
 
-    # ===== MINE MANAGEMENT =====
+    ##
+    # @brief Adds a new mine entry to the table.
+    #
+    # Creates a new mine row, assigns a unique identifier,
+    # initializes resource selection controls, and creates
+    # the corresponding warden entry associated with the mine.
+    #
     def _add_mine(self) -> None:
 
         # ===== ROW =====
@@ -981,7 +1171,16 @@ class DataDialog(QDialog):
             QTableWidgetItem(""),
         )
 
-    # ===== ROW REMOVAL =====
+    ##
+    # @brief Removes selected rows from a table.
+    #
+    # Deletes all currently selected rows from the specified
+    # table, refreshes entity identifiers, and updates the
+    # state of deletion controls.
+    #
+    # @param table_widget
+    # Table containing rows selected for removal.
+    #
     def _remove_selected_rows(self, table_widget: QTableWidget) -> None:
 
         # ===== SELECTED ROWS =====
@@ -1006,7 +1205,13 @@ class DataDialog(QDialog):
         # ===== BUTTON UPDATE =====
         self._update_delete_buttons()
 
-    # ===== MINE REMOVAL =====
+    ##
+    # @brief Removes selected mines and their wardens.
+    #
+    # Deletes selected mine entries together with their
+    # corresponding warden records to preserve data
+    # consistency across related tables.
+    #
     def _delete_selected_mines(self) -> None:
 
         # ===== SELECTED ROWS =====
@@ -1035,7 +1240,13 @@ class DataDialog(QDialog):
         # ===== BUTTON UPDATE =====
         self._update_delete_buttons()
 
-    # ===== BUTTON STATES =====
+    ##
+    # @brief Updates deletion button availability.
+    #
+    # Enables or disables deletion controls according
+    # to the current selection state of miner and mine
+    # tables.
+    #
     def _update_delete_buttons(self) -> None:
 
         # ===== MINER BUTTON =====
@@ -1048,7 +1259,18 @@ class DataDialog(QDialog):
             self.mines_table.selectionModel().hasSelection()
         )
 
-    # ===== DATA LOADING =====
+    ##
+    # @brief Loads world data into the user interface.
+    #
+    # Populates miner, mine, and warden tables using
+    # data obtained from the specified world model.
+    # Existing entities are reconstructed together with
+    # their resources, capacities, positions, and
+    # associated warden information.
+    #
+    # @param world_data
+    # World data model used to populate the dialogue.
+    #
     def _load_to_tables(self, world_data: WorldData) -> None:
 
         # ===== MINERS =====
@@ -1154,7 +1376,14 @@ class DataDialog(QDialog):
                 ),
             )
 
-    # ===== DATA SAVE =====
+    ##
+    # @brief Validates and persists world data.
+    #
+    # Executes data validation, displays validation
+    # feedback when errors are detected, persists
+    # the current world state, emits the data change
+    # notification signal, and closes the dialogue.
+    #
     def _save(self) -> None:
 
         # ===== VALIDATION =====
@@ -1193,7 +1422,21 @@ class DataDialog(QDialog):
         # ===== CLOSE DIALOG =====
         self.accept()
 
-    # ===== DATA EXPORT =====
+    ##
+    # @brief Constructs a world model from dialogue data.
+    #
+    # Extracts miners, mines, and wardens from the
+    # user interface tables and converts them into
+    # domain objects used by the optimization engine.
+    #
+    # Resource selections, coordinates, capacities,
+    # and warden assignments are transformed into
+    # a complete WorldData instance.
+    #
+    # @return WorldData
+    # World model reconstructed from the current
+    # dialogue state.
+    #
     def get_data(self) -> WorldData:
 
         # ===== DATA CONTAINERS =====
