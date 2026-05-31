@@ -43,8 +43,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - language: c-cpp
-          build-mode: manual
         - language: python
           build-mode: none
         # CodeQL supports the following values keywords for 'language': 'actions', 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'rust', 'swift'
@@ -65,14 +63,6 @@ jobs:
     # - name: Setup runtime (example)
     #   uses: actions/setup-example@v1
 
-    # Install required build tools for C++ projects.
-    # Ensures CMake is available for projects that use CMake-based build systems.
-    # This step improves compatibility of the workflow across different project setups.
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake
-
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
@@ -86,42 +76,6 @@ jobs:
 
         # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
-
-    # If the analyze step fails for one of the languages you are analyzing with
-    # "We were unable to automatically build your code", modify the matrix above
-    # to set the build mode to "manual" for that language. Then modify this step
-    # to build your code.
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-    - name: Run manual build steps
-      if: matrix.build-mode == 'manual'
-      shell: bash
-      run: |
-        set -e
-        echo "🔍 Detecting build system..."
-    
-        if [ -f Makefile ]; then
-          echo "🛠 Using Makefile"
-          make
-    
-        elif [ -f CMakeLists.txt ]; then
-          echo "🛠 Using CMake"
-          mkdir -p build
-          cd build
-          cmake ..
-          make
-    
-        else
-          echo "⚙️ No build system found, compiling each file separately"
-        
-          mkdir -p bin
-        
-          for file in $(find . -name "*.cpp" \
-            ! -path "./core/*"); do
-            echo "🔧 Compiling $file"
-            g++ -std=c++20 -Wall -Wextra -Werror -pedantic "$file" -o "bin/$(basename ${file%.cpp})"
-          done
-        fi
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
